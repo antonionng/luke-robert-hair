@@ -1,0 +1,29 @@
+<svg width="800" height="600" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="800" height="600" fill="#E8EDE8"/>
+  
+  <!-- Decorative circles -->
+  <circle cx="150" cy="150" r="80" fill="#687B69" opacity="0.1"/>
+  <circle cx="650" cy="450" r="100" fill="#687B69" opacity="0.1"/>
+  
+  <!-- Scissors icon -->
+  <g transform="translate(320, 220)">
+    <!-- Left blade -->
+    <ellipse cx="50" cy="80" rx="15" ry="40" fill="#687B69" transform="rotate(-30 50 80)"/>
+    <!-- Right blade -->
+    <ellipse cx="110" cy="80" rx="15" ry="40" fill="#687B69" transform="rotate(30 110 80)"/>
+    <!-- Handles -->
+    <circle cx="50" cy="140" r="20" fill="none" stroke="#687B69" stroke-width="3"/>
+    <circle cx="110" cy="140" r="20" fill="none" stroke="#687B69" stroke-width="3"/>
+    <!-- Center -->
+    <circle cx="80" cy="80" r="8" fill="#687B69"/>
+  </g>
+  
+  <!-- Text -->
+  <text x="400" y="420" font-family="serif" font-size="32" fill="#687B69" text-anchor="middle" font-weight="300">
+    Precision Cutting
+  </text>
+  <text x="400" y="460" font-family="sans-serif" font-size="18" fill="#4A5A4B" text-anchor="middle" opacity="0.7">
+    Foundation & Technique
+  </text>
+</svg>

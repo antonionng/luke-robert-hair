@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-display: 'Cormorant Garamond', serif;
+    --font-heading: 'Outfit', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-offwhite text-graphite;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+  }
+
+  h1 {
+    @apply text-5xl md:text-7xl font-semibold tracking-tight leading-tight;
+  }
+
+  h2 {
+    @apply text-4xl md:text-5xl font-semibold tracking-tight leading-tight;
+  }
+
+  h3 {
+    @apply text-3xl md:text-4xl font-medium tracking-tight;
+  }
+
+  p {
+    @apply text-base md:text-lg leading-relaxed;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-8 py-4 bg-sage text-white rounded-full font-medium 
+           transition-all duration-300 hover:bg-sage-dark hover:shadow-xl
+           hover:scale-105 active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply px-8 py-4 border-2 border-sage text-sage rounded-full font-medium
+           transition-all duration-300 hover:bg-sage hover:text-white
+           hover:shadow-xl hover:scale-105 active:scale-95;
+  }
+
+  .btn-salon {
+    @apply px-8 py-4 bg-gradient-salon text-white rounded-full font-medium 
+           transition-all duration-300 hover:shadow-xl hover:scale-105 active:scale-95;
+  }
+
+  .btn-education {
+    @apply px-8 py-4 bg-gradient-education text-white rounded-full font-medium 
+           transition-all duration-300 hover:shadow-xl hover:scale-105 active:scale-95;
+  }
+
+  .section-padding {
+    @apply py-16 md:py-24 px-6 md:px-12 lg:px-24;
+  }
+
+  .container-custom {
+    @apply max-w-7xl mx-auto;
+  }
+
+  .divider-sage {
+    @apply h-px bg-gradient-to-r from-transparent via-sage-light to-transparent;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
