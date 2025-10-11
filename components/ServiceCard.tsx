@@ -1,8 +1,9 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 import { Service } from '@/lib/types';
-import { Clock } from 'lucide-react';
+import { Clock, ArrowRight } from 'lucide-react';
 
 interface ServiceCardProps {
   service: Service;
@@ -26,9 +27,19 @@ export default function ServiceCard({ service, index }: ServiceCardProps) {
         
         <p className="text-graphite/70 leading-relaxed">{service.description}</p>
         
-        <div className="flex items-center gap-2 text-sm text-graphite/60">
-          <Clock size={16} />
-          <span>{service.duration}</span>
+        <div className="flex items-center justify-between pt-2">
+          <div className="flex items-center gap-2 text-sm text-graphite/60">
+            <Clock size={16} />
+            <span>{service.duration}</span>
+          </div>
+          
+          <Link
+            href="/book"
+            className="inline-flex items-center gap-2 text-sm font-medium text-sage hover:text-sage-dark transition-colors group-hover:gap-3 transition-all"
+          >
+            Book Now
+            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+          </Link>
         </div>
       </div>
     </motion.div>

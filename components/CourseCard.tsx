@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Course } from '@/lib/types';
-import { Clock, CheckCircle } from 'lucide-react';
+import { Clock, CheckCircle, ArrowRight } from 'lucide-react';
 import CourseEnquiryModal from './CourseEnquiryModal';
+import CourseDetailsModal from './CourseDetailsModal';
 
 interface CourseCardProps {
   course: Course;
@@ -12,7 +13,8 @@ interface CourseCardProps {
 }
 
 export default function CourseCard({ course, index }: CourseCardProps) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isEnquiryOpen, setIsEnquiryOpen] = useState(false);
 
   return (
     <>
@@ -52,20 +54,39 @@ export default function CourseCard({ course, index }: CourseCardProps) {
           ))}
         </ul>
 
-        {/* CTA */}
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="block w-full text-center btn-secondary group-hover:bg-sage group-hover:text-white"
-        >
-          Enquire Now
-        </button>
+        {/* CTAs */}
+        <div className="flex gap-3">
+          <button
+            onClick={() => setIsDetailsOpen(true)}
+            className="flex-1 text-center px-6 py-3 border-2 border-sage text-sage rounded-full font-medium hover:bg-sage hover:text-white transition-all group-hover:scale-105"
+          >
+            View Details
+          </button>
+          <button
+            onClick={() => setIsEnquiryOpen(true)}
+            className="flex-1 text-center px-6 py-3 bg-sage text-white rounded-full font-medium hover:bg-sage-dark transition-all group-hover:scale-105 inline-flex items-center justify-center gap-2"
+          >
+            Enquire
+            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+          </button>
+        </div>
       </div>
     </motion.div>
 
+    <CourseDetailsModal
+      course={course}
+      isOpen={isDetailsOpen}
+      onClose={() => setIsDetailsOpen(false)}
+      onEnquire={() => {
+        setIsDetailsOpen(false);
+        setIsEnquiryOpen(true);
+      }}
+    />
+
     <CourseEnquiryModal
       course={course}
-      isOpen={isModalOpen}
-      onClose={() => setIsModalOpen(false)}
+      isOpen={isEnquiryOpen}
+      onClose={() => setIsEnquiryOpen(false)}
     />
     </>
   );
