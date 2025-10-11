@@ -39,7 +39,7 @@ export default function Navigation() {
           <Link href="/" className="flex items-center -ml-1">
             <div className="relative w-24 h-10">
               <Image
-                src="/images/logo.svg"
+                src="/images/Logo.svg"
                 alt="Luke Robert Hair"
                 fill
                 className="object-contain object-left"
