@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
-import { MapPin } from 'lucide-react';
+import { MapPin, MessageCircle } from 'lucide-react';
 import ServiceCard from '@/components/ServiceCard';
 import TestimonialCard from '@/components/TestimonialCard';
 import { services, testimonials } from '@/lib/data';
@@ -51,6 +51,35 @@ export default function SalonPage() {
             <Link href="/book" className="btn-primary">
               Book Your Appointment
             </Link>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* AI Assistant CTA */}
+      <section className="py-16 bg-sage-pale/20">
+        <div className="container-custom max-w-3xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center space-y-6"
+          >
+            <h2 className="text-3xl lg:text-4xl">Not Sure Which Service is Right?</h2>
+            <p className="text-xl text-graphite/70 leading-relaxed">
+              Let me help you choose. I have built an AI assistant that understands exactly what each service offers. 
+              Tell it about your hair type, lifestyle, and goals, and it will recommend the perfect fit.
+            </p>
+            <button
+              onClick={() => {
+                if (typeof window !== 'undefined' && (window as any).openChatWithMessage) {
+                  (window as any).openChatWithMessage('Hi! I need help choosing the right service for my hair. Can you help me understand the differences?');
+                }
+              }}
+              className="inline-flex items-center gap-3 px-8 py-4 bg-sage text-white rounded-full font-medium hover:bg-sage-dark transition-all hover:scale-105 shadow-lg"
+            >
+              <MessageCircle size={20} />
+              Ask Luke's AI: "Which service is right for me?"
+            </button>
           </motion.div>
         </div>
       </section>
