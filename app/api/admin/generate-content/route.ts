@@ -2,14 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { db } from '@/lib/db';
 
-const openai = new OpenAI({
+const openai = process.env.OPENAI_API_KEY ? new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
-});
+}) : null;
 
 const categories = ['Salon Tips', 'Education Insights', 'Product Highlights'] as const;
 
 export async function POST(request: NextRequest) {
   try {
+    if (!openai) {
+      return NextResponse.json(
+        { error: 'OpenAI API key not configured' },
+        { status: 500 }
+      );
+    }
+
     // Generate 3 blog posts
     const posts = await Promise.all([
       generateBlogPost(categories[0]),
@@ -56,7 +63,7 @@ Format your response as JSON:
   "content": "Full post content in markdown"
 }`;
 
-  const completion = await openai.chat.completions.create({
+  const completion = await openai!.chat.completions.create({
     model: 'gpt-4o-mini',
     messages: [{ role: 'user', content: contentPrompt }],
     response_format: { type: 'json_object' },
