@@ -73,15 +73,24 @@ export default function AIAssistant() {
         }),
       });
 
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+
       const data = await response.json();
-      setMessages((prev) => [...prev, { role: 'assistant', content: data.message }]);
+      
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      setMessages((prev) => [...prev, { role: 'assistant', content: data.message || data.content || 'No response received' }]);
     } catch (error) {
       console.error('Chat error:', error);
       setMessages((prev) => [
         ...prev,
         {
           role: 'assistant',
-          content: "I'm sorry, I'm having trouble connecting right now. Please try again or contact us directly.",
+          content: "I'm sorry, the AI assistant is currently unavailable (OpenAI API key not configured). Please contact us directly at luke@lukeroberthair.com or call +44 7482 733206.",
         },
       ]);
     } finally {
