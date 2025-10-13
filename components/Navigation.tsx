@@ -100,16 +100,20 @@ export default function Navigation() {
               ))}
               <Link
                 href="/book"
-                className="w-full text-center px-8 py-4 bg-sage text-white rounded-full font-medium hover:bg-sage/90 transition-colors"
+                onClick={() => setIsOpen(false)}
+                className="block w-full text-center px-8 py-4 bg-sage text-white rounded-full font-medium hover:bg-sage/90 transition-colors"
               >
                 Book Now
               </Link>
               <Link
                 href="/admin"
-                className="w-full text-center px-8 py-4 border-2 border-sage text-sage rounded-full font-medium hover:bg-sage hover:text-white transition-colors flex items-center justify-center gap-2"
+                onClick={() => setIsOpen(false)}
+                className="block w-full text-center px-8 py-4 border-2 border-sage text-sage rounded-full font-medium hover:bg-sage hover:text-white transition-colors"
               >
-                <LogIn size={20} />
-                CRM Login
+                <span className="flex items-center justify-center gap-2">
+                  <LogIn size={20} />
+                  CRM Login
+                </span>
               </Link>
             </div>
           </motion.div>
