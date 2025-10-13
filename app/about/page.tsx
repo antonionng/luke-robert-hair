@@ -106,29 +106,54 @@ export default function AboutPage() {
           <div className="space-y-4">
             {[
               {
-                year: '2010',
-                title: 'Started Training',
-                desc: 'Began apprenticeship, learning precision cutting and classic techniques.',
+                year: '2012',
+                title: 'Saturday Boy',
+                desc: 'Where it all started. Sweeping floors, making tea, and watching the stylists work. I knew this was what I wanted to do.',
               },
               {
-                year: '2015',
-                title: 'Established Practice',
-                desc: 'Opened first location in Altrincham, building a loyal client base.',
+                year: '2014',
+                title: 'Apprenticeship',
+                desc: 'Proper training began. Long days, sore feet, but I was obsessed with getting every angle right, every section perfect.',
+              },
+              {
+                year: '2016',
+                title: 'Shop Floor Stylist',
+                desc: 'Finally had my own chair. Started building relationships with clients and really understanding what makes a cut work in real life.',
+              },
+              {
+                year: '2017',
+                title: 'Young Artist Team',
+                desc: 'Got selected for the young artist program. Pushed me creatively and taught me techniques I still use every day.',
               },
               {
                 year: '2018',
-                title: 'L\'Oréal Professional Ambassador',
-                desc: 'Became official training partner, teaching stylists nationwide.',
+                title: 'Salon International Stage Show',
+                desc: 'Performed on stage in front of thousands. Nerve-wracking but incredible. Proved to myself I could compete at the highest level.',
+              },
+              {
+                year: '2019',
+                title: 'Opened My Salon',
+                desc: 'Took the leap. Opened my own place where I could do things my way - precision cuts, honest advice, no gimmicks.',
+              },
+              {
+                year: '2020',
+                title: 'Goldwell Guest Artist',
+                desc: 'Started working with Goldwell as a guest artist. Loved sharing what I\'d learned and seeing other stylists have those "aha" moments.',
               },
               {
                 year: '2021',
-                title: 'Multi-Location Growth',
-                desc: 'Expanded to Knutsford and Reading, serving clients across the UK.',
+                title: 'International Education',
+                desc: 'Teaching went global. Traveled to train stylists abroad and realized education was becoming as important to me as cutting.',
               },
               {
-                year: '2024',
-                title: '500+ Stylists Trained',
-                desc: 'Built comprehensive education programs from foundation to advanced techniques.',
+                year: '2022',
+                title: 'L\'Oréal UKI Artist',
+                desc: 'Became a L\'Oréal Professional artist. A dream partnership with a brand I\'ve always respected. Now training stylists across the UK and Ireland.',
+              },
+              {
+                year: 'Present',
+                title: 'Multi-Location & Beyond',
+                desc: 'Running salons across multiple locations, trained over 500 stylists, and still learning every day. The journey continues.',
               },
             ].map((item, index) => (
               <motion.div
