@@ -22,23 +22,13 @@ const courseDetails: Record<string, {
   'foundation-cutting': {
     curriculum: [
       {
-        title: 'Day 1: Fundamentals & Geometry',
+        title: 'Fundamentals & Geometry',
         topics: [
           'Understanding hair structure and growth patterns',
           'Core cutting principles and angles',
           'Sectioning techniques for precision',
           'Tension control and hand positioning',
           'Classic bob and one-length cuts',
-        ],
-      },
-      {
-        title: 'Day 2: Graduation & Practice',
-        topics: [
-          'Graduation techniques and weight distribution',
-          'Creating movement and texture',
-          'Consultation and client communication',
-          'Hands-on practice with live models',
-          'Troubleshooting common mistakes',
         ],
       },
     ],
@@ -56,7 +46,7 @@ const courseDetails: Record<string, {
       'Anyone struggling with consistency',
     ],
     includes: [
-      '2 full days of intensive training',
+      '1 full day of intensive training',
       'Live model practice sessions',
       'Course manual and reference materials',
       'Certificate of completion',
@@ -69,36 +59,20 @@ const courseDetails: Record<string, {
       'Command higher prices for your work',
     ],
   },
-  'advanced-cutting': {
+  'salon-creative': {
     curriculum: [
       {
-        title: 'Day 1: Advanced Layering',
+        title: 'Advanced Techniques',
         topics: [
           'Complex layering techniques',
           'Creating seamless blends',
           'Advanced graduation methods',
-          'Working with different hair textures',
-          'Precision point cutting',
-        ],
-      },
-      {
-        title: 'Day 2: Freehand & Texturising',
-        topics: [
           'Freehand cutting techniques',
           'Advanced texturising methods',
           'Creating bespoke shapes',
           'Working without guides',
-          'Speed and efficiency techniques',
-        ],
-      },
-      {
-        title: 'Day 3: Consultation & Portfolio',
-        topics: [
           'Advanced consultation methods',
-          'Reading clients and their lifestyle',
-          'Creating signature styles',
           'Building your portfolio',
-          'Marketing your advanced skills',
         ],
       },
     ],
@@ -116,11 +90,11 @@ const courseDetails: Record<string, {
       'Anyone aiming for master-level skills',
     ],
     includes: [
-      '3 full days of advanced training',
+      '1 full day of advanced training',
       'Multiple live model sessions',
       'Advanced technique manual',
       'Portfolio development guidance',
-      '60 days post-course mentorship',
+      '30 days post-course mentorship',
     ],
     outcomes: [
       'Create complex, bespoke styles',

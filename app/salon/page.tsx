@@ -164,7 +164,7 @@ export default function SalonPage() {
           >
             <h2 className="text-white mb-6">Where to Find Me</h2>
             <p className="text-xl text-sage-light max-w-2xl mx-auto">
-              I work across three locations in the North West and Berkshire. Each salon offers the same precision cutting 
+              I work across three locations in Cheshire and Berkshire. Each salon offers the same precision cutting 
               and personalised service - just choose the location that works best for you.
             </p>
           </motion.div>
@@ -190,13 +190,13 @@ export default function SalonPage() {
                 id: 'knutsford'
               },
               {
-                name: 'Reading',
+                name: 'Caversham',
                 salon: 'Alternate Salon',
                 address: '19 Church Street, Caversham',
                 postcode: 'RG4 8BA',
                 days: 'Monday - Saturday',
                 frequency: '1 week per month',
-                id: 'reading'
+                id: 'caversham'
               }
             ].map((location, index) => (
               <motion.div
@@ -244,7 +244,7 @@ export default function SalonPage() {
             className="mt-12 text-center"
           >
             <p className="text-sage-light text-sm">
-              💡 <strong>Tip:</strong> My Reading week rotates monthly. When you book, the system will show you exactly when I'm available at each location.
+              💡 <strong>Tip:</strong> My Caversham week rotates monthly. When you book, the system will show you exactly when I'm available at each location.
             </p>
           </motion.div>
         </div>

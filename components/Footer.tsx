@@ -47,11 +47,11 @@ export default function Footer() {
             <ul className="space-y-3 text-sm text-sage-light">
               <li className="flex items-start gap-2">
                 <MapPin size={16} className="mt-1 flex-shrink-0" />
-                <span>Altrincham, Knutsford & Reading</span>
+                <span>Cheshire & Berkshire</span>
               </li>
               <li className="flex items-center gap-2">
                 <Phone size={16} className="flex-shrink-0" />
-                <span>+44 7482 733206</span>
+                <span>07862 054292</span>
               </li>
               <li className="flex items-center gap-2">
                 <Mail size={16} className="flex-shrink-0" />

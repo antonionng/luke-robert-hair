@@ -90,7 +90,7 @@ export default function AIAssistant() {
         ...prev,
         {
           role: 'assistant',
-          content: "I'm sorry, the AI assistant is currently unavailable (OpenAI API key not configured). Please contact us directly at luke@lukeroberthair.com or call +44 7482 733206.",
+          content: "I'm sorry, the AI assistant is currently unavailable (OpenAI API key not configured). Please contact us directly at luke@lukeroberthair.com or call 07862 054292.",
         },
       ]);
     } finally {

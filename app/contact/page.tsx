@@ -99,10 +99,10 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-medium mb-1">Phone</h3>
                     <a
-                      href="tel:+447482733206"
+                      href="tel:07862054292"
                       className="text-graphite/70 hover:text-sage transition-colors"
                     >
-                      +44 7482 733206
+                      07862 054292
                     </a>
                   </div>
                 </div>
@@ -113,7 +113,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-medium mb-1">Locations</h3>
-                    <p className="text-graphite/70">Altrincham, Knutsford & Reading</p>
+                    <p className="text-graphite/70">Cheshire & Berkshire</p>
                   </div>
                 </div>
               </div>
