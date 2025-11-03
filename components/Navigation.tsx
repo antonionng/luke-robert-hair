@@ -10,6 +10,7 @@ const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/salon', label: 'Salon' },
   { href: '/education', label: 'Education' },
+  { href: '/cpd-partnerships', label: 'CPD Partnerships' },
   { href: '/insights', label: 'Insights' },
   { href: '/about', label: 'About' },
   { href: '/contact', label: 'Contact' },

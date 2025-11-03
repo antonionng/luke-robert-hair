@@ -3,15 +3,21 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Users, Calendar, GraduationCap, FileText, TrendingUp, RefreshCw,
-  DollarSign, Clock, CheckCircle, XCircle, AlertCircle, MessageSquare,
-  Search, Filter, Download, Mail, Phone, MapPin, Eye, Edit, Trash2
+  Search, Download, Plus, Grid, List, CalendarDays
 } from 'lucide-react';
+import AdminSidebar from '@/components/admin/AdminSidebar';
 import StatsGrid from '@/components/admin/StatsGrid';
 import BookingsTable from '@/components/admin/BookingsTable';
 import LeadsTable from '@/components/admin/LeadsTable';
+import CPDPartnershipsTable from '@/components/admin/CPDPartnershipsTable';
 import ChatSessionsTable from '@/components/admin/ChatSessionsTable';
 import ServicesManager from '@/components/admin/ServicesManager';
+import LeadDetailModal from '@/components/admin/LeadDetailModal';
+import CreateLeadModal from '@/components/admin/CreateLeadModal';
+import CreateBookingModal from '@/components/admin/CreateBookingModal';
+import BookingDetailModal from '@/components/admin/BookingDetailModal';
+import CalendarView from '@/components/admin/CalendarView';
+import AdminEmptyState from '@/components/admin/AdminEmptyState';
 import { getAllBookings } from '@/lib/bookingStore';
 import { Booking as BookingType } from '@/lib/bookingTypes';
 
@@ -19,6 +25,7 @@ interface Stats {
   totalContacts: number;
   pendingBookings: number;
   activeLeads: number;
+  cpdPartnerships: number;
   publishedPosts: number;
   monthlyRevenue: number;
   conversionRate: number;
@@ -26,139 +33,207 @@ interface Stats {
   chatSessions: number;
 }
 
-interface Booking {
-  id: string;
-  clientName: string;
-  email: string;
-  phone: string;
-  service: string;
-  date: string;
-  time: string;
-  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
-  price: number;
-  notes?: string;
-}
-
-interface Lead {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  course: string;
-  experienceLevel: string;
-  status: 'new' | 'contacted' | 'qualified' | 'converted' | 'lost';
-  source: string;
-  enquiryDate: string;
-  value: number;
-  notes?: string;
-}
-
-interface ChatSession {
-  id: string;
-  timestamp: string;
-  duration: string;
-  messages: number;
-  outcome: 'booking' | 'enquiry' | 'info' | 'abandoned';
-  page: string;
-}
-
 export default function AdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<'overview' | 'bookings' | 'leads' | 'chat' | 'services'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'bookings' | 'leads' | 'cpd' | 'chat' | 'services'>('overview');
   const [searchTerm, setSearchTerm] = useState('');
+  const [bookingView, setBookingView] = useState<'table' | 'calendar'>('table');
   
-  // Import dummy data
+  // Modals
+  const [selectedLead, setSelectedLead] = useState<any>(null);
+  const [selectedBooking, setSelectedBooking] = useState<any>(null);
+  const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
+  const [isCreateLeadModalOpen, setIsCreateLeadModalOpen] = useState(false);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [isCreateBookingModalOpen, setIsCreateBookingModalOpen] = useState(false);
+  
+  // Data
   const [stats, setStats] = useState<Stats>({
-    totalContacts: 156,
-    pendingBookings: 12,
-    activeLeads: 8,
-    publishedPosts: 6,
-    monthlyRevenue: 12450,
-    conversionRate: 68,
-    avgBookingValue: 78,
-    chatSessions: 47,
+    totalContacts: 0,
+    pendingBookings: 0,
+    activeLeads: 0,
+    cpdPartnerships: 0,
+    publishedPosts: 0,
+    monthlyRevenue: 0,
+    conversionRate: 0,
+    avgBookingValue: 0,
+    chatSessions: 0,
   });
   
   const [bookings, setBookings] = useState<BookingType[]>([]);
+  const [leads, setLeads] = useState<any[]>([]);
+  const [cpdPartnerships, setCpdPartnerships] = useState<any[]>([]);
+  const [upcomingBookings, setUpcomingBookings] = useState<any[]>([]);
+  const [hotLeads, setHotLeads] = useState<any[]>([]);
+  const [chatActivity, setChatActivity] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
-  // Load bookings on mount
+  // Fetch dashboard data
   useEffect(() => {
-    const allBookings = getAllBookings();
-    setBookings(allBookings);
-  }, []);
-  
-  const [leads, setLeads] = useState<Lead[]>([
-    {
-      id: 'LD001',
-      name: 'Rachel Green',
-      email: 'rachel.green@salon.com',
-      phone: '07800 123456',
-      course: 'Foundation Cutting',
-      experienceLevel: 'Junior Stylist (1-2 years)',
-      status: 'new',
-      source: 'Instagram',
-      enquiryDate: '2025-10-09',
-      value: 450,
-    },
-    {
-      id: 'LD002',
-      name: 'Tom Richards',
-      email: 'tom.r@hairco.com',
-      phone: '07800 234567',
-      course: 'Advanced Cutting',
-      experienceLevel: 'Senior Stylist (5+ years)',
-      status: 'contacted',
-      source: 'Website',
-      enquiryDate: '2025-10-08',
-      value: 650,
-    },
-    {
-      id: 'LD003',
-      name: 'Amy Foster',
-      email: 'amy.foster@gmail.com',
-      phone: '07800 345678',
-      course: '1-to-1 Mentorship',
-      experienceLevel: 'Mid-level Stylist (3-4 years)',
-      status: 'qualified',
-      source: 'Referral',
-      enquiryDate: '2025-10-05',
-      value: 700,
-    },
-  ]);
-  
-  const [chatSessions, setChatSessions] = useState<ChatSession[]>([
-    {
-      id: 'CS001',
-      timestamp: '2025-10-10 14:23',
-      duration: '3m 45s',
-      messages: 8,
-      outcome: 'booking',
-      page: '/salon'
-    },
-    {
-      id: 'CS002',
-      timestamp: '2025-10-10 11:15',
-      duration: '2m 12s',
-      messages: 5,
-      outcome: 'enquiry',
-      page: '/education'
-    },
-    {
-      id: 'CS003',
-      timestamp: '2025-10-10 09:45',
-      duration: '5m 30s',
-      messages: 12,
-      outcome: 'info',
-      page: '/insights'
-    },
-  ]);
-  
-  const [isGenerating, setIsGenerating] = useState(false);
+    async function fetchDashboardData() {
+      if (!isAuthenticated) return;
+      
+      setIsLoading(true);
+      try {
+        // Fetch stats
+        const statsRes = await fetch('/api/admin/stats');
+        if (statsRes.ok) {
+          const statsData = await statsRes.json();
+          setStats(statsData);
+        }
+
+        // Fetch bookings
+        const allBookings = getAllBookings();
+        setBookings(allBookings);
+
+        // Fetch upcoming bookings
+        const upcomingRes = await fetch('/api/admin/upcoming-bookings?limit=5');
+        if (upcomingRes.ok) {
+          const upcomingData = await upcomingRes.json();
+          setUpcomingBookings(upcomingData);
+        }
+
+        // Fetch hot leads
+        const hotLeadsRes = await fetch('/api/admin/hot-leads?limit=5');
+        if (hotLeadsRes.ok) {
+          const hotLeadsData = await hotLeadsRes.json();
+          setHotLeads(hotLeadsData);
+        }
+
+        // Fetch chat activity
+        const chatRes = await fetch('/api/admin/chat-activity?limit=5');
+        if (chatRes.ok) {
+          const chatData = await chatRes.json();
+          setChatActivity(chatData);
+        }
+
+        // Fetch all leads
+        const leadsRes = await fetch('/api/admin/leads');
+        if (leadsRes.ok) {
+          const leadsData = await leadsRes.json();
+          
+          // Separate into categories
+          const salonReferrals = leadsData.filter((l: any) => 
+            l.leadType === 'salon_referral' || l.source?.includes('salon_referral')
+          );
+          const educationLeads = leadsData.filter((l: any) => 
+            l.leadType === 'education' || (!l.leadType && !l.institution && !l.referralSalon)
+          );
+          const cpdLeads = leadsData.filter((l: any) => 
+            ['cpd', 'cpd_partnership'].includes(l.leadType || '') || l.institution
+          );
+          
+          setLeads(educationLeads);
+          setCpdPartnerships(cpdLeads);
+          
+          // Update stats with CPD count and salon referrals
+          setStats(prev => ({
+            ...prev,
+            cpdPartnerships: cpdLeads.length,
+            pendingBookings: prev.pendingBookings + salonReferrals.length // Include referrals in pending
+          }));
+          
+          // Store salon referrals with bookings
+          // Convert referral leads to booking format for display
+          const referralBookings = salonReferrals.map((ref: any) => ({
+            id: ref.id,
+            clientName: ref.name,
+            client: {
+              firstName: ref.firstName,
+              lastName: ref.lastName,
+              email: ref.email,
+              phone: ref.phone || '',
+              notes: ref.notes || ''
+            },
+            email: ref.email,
+            phone: ref.phone || '',
+            service: { name: ref.serviceInterest || ref.course || 'Service TBD', price: 0, duration: 0 },
+            location: ref.referralSalon || 'Partner Salon',
+            date: ref.preferredDate || ref.enquiryDate,
+            time: 'TBD',
+            status: 'pending' as const,
+            price: 0,
+            isReferral: true,
+            referralSalon: ref.referralSalon,
+            createdAt: ref.enquiryDate,
+          }));
+          
+          // Merge with existing bookings
+          setBookings((prev: any) => [...prev, ...referralBookings]);
+        }
+      } catch (error) {
+        console.error('Failed to fetch dashboard data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchDashboardData();
+  }, [isAuthenticated]);
+
+  const handleViewLead = (lead: any) => {
+    setSelectedLead(lead);
+    setIsLeadModalOpen(true);
+  };
+
+  const handleViewBooking = (booking: any) => {
+    setSelectedBooking(booking);
+    setIsBookingModalOpen(true);
+  };
+
+  const handleUpdateLead = async (leadId: string, updates: any) => {
+    try {
+      const res = await fetch('/api/admin/update-lead', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leadId, updates }),
+      });
+
+      if (res.ok) {
+        // Refresh leads
+        const leadsRes = await fetch('/api/admin/leads');
+        if (leadsRes.ok) {
+          const leadsData = await leadsRes.json();
+          const educationLeads = leadsData.filter((l: any) => 
+            l.leadType === 'education' || (!l.leadType && !l.institution)
+          );
+          const cpdLeads = leadsData.filter((l: any) => 
+            ['cpd', 'cpd_partnership'].includes(l.leadType || '') || l.institution
+          );
+          setLeads(educationLeads);
+          setCpdPartnerships(cpdLeads);
+          
+          // Update selectedLead
+          const updatedLead = leadsData.find((l: any) => l.id === leadId);
+          if (updatedLead) {
+            setSelectedLead(updatedLead);
+          }
+        }
+      } else {
+        throw new Error('Failed to update lead');
+      }
+    } catch (error) {
+      console.error('Update lead error:', error);
+      throw error;
+    }
+  };
+
+  const handleUpdateBooking = async (bookingId: string, updates: any) => {
+    try {
+      // Implementation would go here
+      console.log('Update booking:', bookingId, updates);
+      // Refresh bookings after update
+      const allBookings = getAllBookings();
+      setBookings(allBookings);
+    } catch (error) {
+      console.error('Update booking error:', error);
+      throw error;
+    }
+  };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // Simple authentication - in production, use proper auth
     if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD || password === 'admin123') {
       setIsAuthenticated(true);
     } else {
@@ -166,36 +241,26 @@ export default function AdminDashboard() {
     }
   };
 
-  const generateContent = async () => {
-    setIsGenerating(true);
-    try {
-      const response = await fetch('/api/admin/generate-content', {
-        method: 'POST',
-      });
-      const data = await response.json();
-      alert(`Generated ${data.count} new posts!`);
-      // Refresh stats
-      setStats({ ...stats, publishedPosts: stats.publishedPosts + data.count });
-    } catch (error) {
-      console.error('Content generation error:', error);
-      alert('Failed to generate content');
-    } finally {
-      setIsGenerating(false);
-    }
+  const handleRefresh = () => {
+    window.location.reload();
+  };
+
+  const handleExport = () => {
+    alert('Export functionality coming soon!');
   };
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-sage-pale/30 pt-20">
+      <div className="min-h-screen flex items-center justify-center admin-dark">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full mx-4"
+          className="admin-card p-8 max-w-md w-full mx-4"
         >
-          <h1 className="text-3xl font-playfair font-light mb-6 text-center">Admin Login</h1>
+          <h1 className="text-3xl font-semibold mb-6 text-center text-white">Admin Login</h1>
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label htmlFor="password" className="block font-medium mb-2">
+              <label htmlFor="password" className="block font-medium mb-2 text-zinc-300">
                 Password
               </label>
               <input
@@ -203,11 +268,11 @@ export default function AdminDashboard() {
                 id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-mist rounded-xl focus:outline-none focus:ring-2 focus:ring-sage/20"
+                className="admin-input w-full px-4 py-3"
                 placeholder="Enter admin password"
               />
             </div>
-            <button type="submit" className="w-full btn-primary">
+            <button type="submit" className="admin-btn-primary w-full">
               Login
             </button>
           </form>
@@ -217,9 +282,22 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="pt-20 min-h-screen bg-sage-pale/30">
-      <div className="section-padding">
-        <div className="container-custom max-w-7xl">
+    <div className="flex min-h-screen admin-dark">
+      {/* Sidebar */}
+      <AdminSidebar 
+        activeTab={activeTab} 
+        onTabChange={setActiveTab}
+        stats={{
+          activeLeads: leads.length,
+          pendingBookings: stats.pendingBookings,
+          cpdPartnerships: cpdPartnerships.length,
+          chatSessions: stats.chatSessions,
+        }}
+      />
+
+      {/* Main Content */}
+      <div className="flex-1 ml-[280px]">
+        <div className="p-8">
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -228,54 +306,58 @@ export default function AdminDashboard() {
           >
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="mb-2">CRM Dashboard</h1>
-                <p className="text-lg text-graphite/70">
-                  Manage bookings, leads, and track performance
+                <h1 className="text-4xl font-semibold text-white mb-2">
+                  {activeTab === 'overview' && 'Dashboard Overview'}
+                  {activeTab === 'bookings' && 'Salon Bookings'}
+                  {activeTab === 'leads' && 'Stylist Training'}
+                  {activeTab === 'cpd' && 'College Partnerships'}
+                  {activeTab === 'chat' && 'Chat Sessions'}
+                  {activeTab === 'services' && 'Services'}
+                </h1>
+                <p className="text-lg text-zinc-400">
+                  {activeTab === 'overview' && 'Monitor your business performance'}
+                  {activeTab === 'bookings' && 'Hair styling appointments and services'}
+                  {activeTab === 'leads' && 'Professional education for stylists and salons'}
+                  {activeTab === 'cpd' && 'Educational programs for colleges and institutions'}
+                  {activeTab === 'chat' && 'AI chat interactions'}
+                  {activeTab === 'services' && 'Manage services and pricing'}
                 </p>
               </div>
               <div className="flex items-center gap-3">
-                <button className="btn-secondary flex items-center gap-2">
+                {(activeTab === 'leads' || activeTab === 'cpd') && (
+                  <button 
+                    onClick={() => setIsCreateLeadModalOpen(true)}
+                    className="admin-btn-primary flex items-center gap-2"
+                  >
+                    <Plus size={18} />
+                    Add Lead
+                  </button>
+                )}
+                {activeTab === 'bookings' && (
+                  <button 
+                    onClick={() => setIsCreateBookingModalOpen(true)}
+                    className="admin-btn-success flex items-center gap-2"
+                  >
+                    <Plus size={18} />
+                    New Booking
+                  </button>
+                )}
+                <button 
+                  onClick={handleRefresh}
+                  className="admin-btn-secondary flex items-center gap-2"
+                  disabled={isLoading}
+                >
+                  <Search size={18} className={isLoading ? 'animate-spin' : ''} />
+                  {isLoading ? 'Loading...' : 'Refresh'}
+                </button>
+                <button 
+                  onClick={handleExport}
+                  className="admin-btn-secondary flex items-center gap-2"
+                >
                   <Download size={18} />
                   Export
                 </button>
               </div>
-            </div>
-          </motion.div>
-
-          {/* Tab Navigation */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="mb-8"
-          >
-            <div className="flex gap-2 border-b border-mist bg-white rounded-t-2xl px-6 overflow-x-auto">
-              {[
-                { id: 'overview', label: 'Overview', icon: TrendingUp },
-                { id: 'bookings', label: 'Bookings', icon: Calendar },
-                { id: 'leads', label: 'Education Leads', icon: GraduationCap },
-                { id: 'chat', label: 'Chat Sessions', icon: MessageSquare },
-                { id: 'services', label: 'Services', icon: DollarSign },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative ${
-                    activeTab === tab.id
-                      ? 'text-sage'
-                      : 'text-graphite/60 hover:text-graphite'
-                  }`}
-                >
-                  <tab.icon size={18} />
-                  {tab.label}
-                  {activeTab === tab.id && (
-                    <motion.div
-                      layoutId="activeTab"
-                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-sage"
-                    />
-                  )}
-                </button>
-              ))}
             </div>
           </motion.div>
 
@@ -293,65 +375,77 @@ export default function AdminDashboard() {
                 
                 {/* Quick Overview Cards */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
-                  <div className="bg-white p-6 rounded-2xl shadow-sm">
-                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                      <Calendar size={20} className="text-sage" />
-                      Upcoming Bookings
-                    </h3>
-                    <div className="space-y-3">
-                      {bookings.filter(b => b.status === 'confirmed').slice(0, 3).map(booking => (
-                        <div key={booking.id} className="flex items-center justify-between p-3 bg-sage/5 rounded-lg">
-                          <div>
-                            <p className="font-medium text-sm">{booking.client.firstName} {booking.client.lastName}</p>
-                            <p className="text-xs text-graphite/60">{booking.service.name}</p>
+                  {/* Upcoming Bookings */}
+                  <div className="admin-card p-6">
+                    <h3 className="text-lg font-semibold mb-4 text-white">Upcoming Bookings</h3>
+                    {isLoading ? (
+                      <div className="text-center py-4 text-zinc-500">Loading...</div>
+                    ) : upcomingBookings.length === 0 ? (
+                      <div className="text-center py-4 text-zinc-500">No upcoming bookings</div>
+                    ) : (
+                      <div className="space-y-3">
+                        {upcomingBookings.slice(0, 3).map(booking => (
+                          <div key={booking.id} className="flex items-center justify-between p-3 bg-zinc-700/50 rounded-lg">
+                            <div>
+                              <p className="font-medium text-sm text-white">{booking.clientName}</p>
+                              <p className="text-xs text-zinc-400">{booking.service}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-medium text-white">{booking.time}</p>
+                              <p className="text-xs text-zinc-400">{booking.date}</p>
+                            </div>
                           </div>
-                          <div className="text-right">
-                            <p className="text-sm font-medium">{booking.time}</p>
-                            <p className="text-xs text-graphite/60">{new Date(booking.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
-                  <div className="bg-white p-6 rounded-2xl shadow-sm">
-                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                      <GraduationCap size={20} className="text-sage" />
-                      Hot Leads
-                    </h3>
-                    <div className="space-y-3">
-                      {leads.filter(l => l.status === 'qualified').map(lead => (
-                        <div key={lead.id} className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
-                          <div>
-                            <p className="font-medium text-sm">{lead.name}</p>
-                            <p className="text-xs text-graphite/60">{lead.course}</p>
+                  {/* Hot Leads */}
+                  <div className="admin-card p-6">
+                    <h3 className="text-lg font-semibold mb-4 text-white">Hot Leads</h3>
+                    {isLoading ? (
+                      <div className="text-center py-4 text-zinc-500">Loading...</div>
+                    ) : hotLeads.length === 0 ? (
+                      <div className="text-center py-4 text-zinc-500">No hot leads yet</div>
+                    ) : (
+                      <div className="space-y-3">
+                        {hotLeads.slice(0, 3).map(lead => (
+                          <div key={lead.id} className="flex items-center justify-between p-3 bg-purple-500/10 rounded-lg border border-purple-500/20">
+                            <div>
+                              <p className="font-medium text-sm text-white">{lead.name}</p>
+                              <p className="text-xs text-zinc-400">{lead.course}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-semibold text-green-400">£{lead.estimatedValue}</p>
+                            </div>
                           </div>
-                          <div className="text-right">
-                            <p className="text-sm font-semibold text-green-600">£{lead.value}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
-                  <div className="bg-white p-6 rounded-2xl shadow-sm">
-                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                      <MessageSquare size={20} className="text-sage" />
-                      Recent Chat Activity
-                    </h3>
-                    <div className="space-y-3">
-                      {chatSessions.slice(0, 3).map(session => (
-                        <div key={session.id} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                          <div>
-                            <p className="font-medium text-sm">{session.outcome.charAt(0).toUpperCase() + session.outcome.slice(1)}</p>
-                            <p className="text-xs text-graphite/60">{session.page}</p>
+                  {/* Recent Chat Activity */}
+                  <div className="admin-card p-6">
+                    <h3 className="text-lg font-semibold mb-4 text-white">Recent Chat Activity</h3>
+                    {isLoading ? (
+                      <div className="text-center py-4 text-zinc-500">Loading...</div>
+                    ) : chatActivity.length === 0 ? (
+                      <div className="text-center py-4 text-zinc-500">No chat activity yet</div>
+                    ) : (
+                      <div className="space-y-3">
+                        {chatActivity.slice(0, 3).map(activity => (
+                          <div key={activity.id} className="flex items-center justify-between p-3 bg-blue-500/10 rounded-lg border border-blue-500/20">
+                            <div>
+                              <p className="font-medium text-sm text-white">{activity.outcome.charAt(0).toUpperCase() + activity.outcome.slice(1)}</p>
+                              <p className="text-xs text-zinc-400">{activity.page}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-xs text-zinc-400">{activity.timestamp.split(',')[1]?.trim() || activity.timestamp}</p>
+                            </div>
                           </div>
-                          <div className="text-right">
-                            <p className="text-xs text-graphite/60">{session.timestamp.split(' ')[1]}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </motion.div>
@@ -365,23 +459,46 @@ export default function AdminDashboard() {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.2 }}
               >
+                {/* Search and View Toggle */}
                 <div className="mb-6 flex items-center gap-4">
                   <div className="flex-1 relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-graphite/40" size={20} />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={20} />
                     <input
                       type="text"
                       placeholder="Search bookings..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-12 pr-4 py-3 border border-mist rounded-xl focus:outline-none focus:ring-2 focus:ring-sage/20"
+                      className="admin-input w-full pl-12 pr-4 py-3"
                     />
                   </div>
-                  <button className="btn-secondary flex items-center gap-2">
-                    <Filter size={18} />
-                    Filter
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setBookingView('table')}
+                      className={bookingView === 'table' ? 'admin-btn-primary' : 'admin-btn-secondary'}
+                    >
+                      <List size={18} />
+                    </button>
+                    <button
+                      onClick={() => setBookingView('calendar')}
+                      className={bookingView === 'calendar' ? 'admin-btn-primary' : 'admin-btn-secondary'}
+                    >
+                      <CalendarDays size={18} />
+                    </button>
+                  </div>
                 </div>
-                <BookingsTable bookings={bookings} searchTerm={searchTerm} />
+                
+                {bookingView === 'table' ? (
+                  <BookingsTable bookings={bookings} searchTerm={searchTerm} />
+                ) : (
+                  <CalendarView 
+                    bookings={bookings as any}
+                    onBookingClick={handleViewBooking}
+                    onDateClick={(date) => {
+                      // Open create booking modal with pre-filled date
+                      setIsCreateBookingModalOpen(true);
+                    }}
+                  />
+                )}
               </motion.div>
             )}
 
@@ -393,23 +510,47 @@ export default function AdminDashboard() {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.2 }}
               >
-                <div className="mb-6 flex items-center gap-4">
-                  <div className="flex-1 relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-graphite/40" size={20} />
-                    <input
-                      type="text"
-                      placeholder="Search leads..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-12 pr-4 py-3 border border-mist rounded-xl focus:outline-none focus:ring-2 focus:ring-sage/20"
-                    />
-                  </div>
-                  <button className="btn-secondary flex items-center gap-2">
-                    <Filter size={18} />
-                    Filter
-                  </button>
+                <div className="mb-6 relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={20} />
+                  <input
+                    type="text"
+                    placeholder="Search stylist training leads..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="admin-input w-full pl-12 pr-4 py-3"
+                  />
                 </div>
-                <LeadsTable leads={leads} searchTerm={searchTerm} />
+                <LeadsTable 
+                  leads={leads} 
+                  searchTerm={searchTerm}
+                  onViewLead={handleViewLead}
+                />
+              </motion.div>
+            )}
+
+            {activeTab === 'cpd' && (
+              <motion.div
+                key="cpd"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="mb-6 relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={20} />
+                  <input
+                    type="text"
+                    placeholder="Search college partnerships..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="admin-input w-full pl-12 pr-4 py-3"
+                  />
+                </div>
+                <CPDPartnershipsTable 
+                  partnerships={cpdPartnerships} 
+                  searchTerm={searchTerm}
+                  onViewPartnership={handleViewLead}
+                />
               </motion.div>
             )}
 
@@ -421,7 +562,11 @@ export default function AdminDashboard() {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.2 }}
               >
-                <ChatSessionsTable sessions={chatSessions} />
+                {isLoading ? (
+                  <div className="text-center py-12 text-zinc-500">Loading chat activity...</div>
+                ) : (
+                  <ChatSessionsTable sessions={chatActivity} />
+                )}
               </motion.div>
             )}
 
@@ -437,9 +582,39 @@ export default function AdminDashboard() {
               </motion.div>
             )}
           </AnimatePresence>
-
         </div>
       </div>
+
+      {/* Modals */}
+      <LeadDetailModal
+        lead={selectedLead}
+        isOpen={isLeadModalOpen}
+        onClose={() => setIsLeadModalOpen(false)}
+        onUpdate={handleUpdateLead}
+      />
+      
+      <CreateLeadModal
+        isOpen={isCreateLeadModalOpen}
+        onClose={() => setIsCreateLeadModalOpen(false)}
+        onSuccess={() => {
+          handleRefresh();
+        }}
+      />
+      
+      <CreateBookingModal
+        isOpen={isCreateBookingModalOpen}
+        onClose={() => setIsCreateBookingModalOpen(false)}
+        onSuccess={() => {
+          handleRefresh();
+        }}
+      />
+      
+      <BookingDetailModal
+        booking={selectedBooking}
+        isOpen={isBookingModalOpen}
+        onClose={() => setIsBookingModalOpen(false)}
+        onUpdate={handleUpdateBooking}
+      />
     </div>
   );
 }

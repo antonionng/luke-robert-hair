@@ -49,8 +49,60 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const fetchServices = searchParams.get('services');
+    const fetchLocations = searchParams.get('locations');
+
+    // If requesting services
+    if (fetchServices === 'true') {
+      // For now, return hardcoded services until we have them in DB
+      const services = [
+        { id: '1', name: 'Precision Cut', price: 65, duration: 60 },
+        { id: '2', name: 'Cut & Finish', price: 85, duration: 90 },
+        { id: '3', name: 'Colour Service', price: 120, duration: 120 },
+        { id: '4', name: 'Balayage', price: 180, duration: 180 },
+        { id: '5', name: 'Restyle', price: 95, duration: 90 },
+      ];
+      return NextResponse.json({ services });
+    }
+
+    // If requesting locations
+    if (fetchLocations === 'true') {
+      const locations = [
+        {
+          id: 'salon-by-altin',
+          name: 'The Salon By Altin Ltd',
+          displayName: 'Luke Robert Hair',
+          address: '19 Church Street, Caversham, RG4 8BA',
+          city: 'Reading',
+          phone: null,
+          bookingSystem: 'ours'
+        },
+        {
+          id: 'urban-sanctuary',
+          name: 'Urban Sanctuary',
+          address: '29 King St, Knutsford, WA16 6DW',
+          phone: '01565 123 456',
+          city: 'Knutsford',
+          bookingSystem: 'theirs',
+          externalUrl: 'https://urbansanctuary.org.uk/book-online/'
+        },
+        {
+          id: 'fixx-salon',
+          name: 'Fixx Salon',
+          address: '1b Lloyd St, Altrincham, WA14 2DD',
+          phone: '0161 123 4567',
+          city: 'Altrincham',
+          bookingSystem: 'theirs',
+          externalUrl: 'https://phorest.com/book/salons/fixxsalonsltd'
+        },
+      ];
+      return NextResponse.json({ locations });
+    }
+
+    // Otherwise return bookings
     const bookings = await db.getAllBookings();
     return NextResponse.json({ bookings });
   } catch (error) {

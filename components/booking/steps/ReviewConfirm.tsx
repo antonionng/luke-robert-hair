@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useBookingStore, addBooking } from '@/lib/bookingStore';
 import { formatDate, formatTime, calculateEndTime, generateConfirmationCode, calculateDeposit } from '@/lib/bookingUtils';
-import { ArrowLeft, Calendar, MapPin, Clock, User, Mail, Phone, DollarSign, AlertCircle, CheckCircle2, Repeat } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Clock, User, Mail, Phone, AlertCircle, CheckCircle2, Repeat } from 'lucide-react';
 
 export default function ReviewConfirm() {
   const { service, location, date, time, client, isRecurring, recurringPattern, nextStep, previousStep, goToStep } = useBookingStore();

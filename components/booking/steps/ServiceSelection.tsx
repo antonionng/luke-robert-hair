@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { useBookingStore } from '@/lib/bookingStore';
 import { SERVICES } from '@/lib/bookingConfig';
-import { Clock, DollarSign, Info } from 'lucide-react';
+import { Clock, Info } from 'lucide-react';
 
 export default function ServiceSelection() {
   const { service, setService, nextStep } = useBookingStore();
@@ -50,7 +50,6 @@ export default function ServiceSelection() {
 
             <div className="flex items-center gap-4 text-sm">
               <div className="flex items-center gap-1 text-graphite/60">
-                <DollarSign size={16} />
                 <span className="font-semibold text-sage">£{s.price}</span>
               </div>
               <div className="flex items-center gap-1 text-graphite/60">

@@ -1,49 +1,94 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send } from 'lucide-react';
+import { MessageCircle, X, Send, GraduationCap, Building, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
+import { 
+  detectContextFromPage, 
+  extractInstitutionalInfo,
+  shouldOfferLeadCapture,
+  generateConversationSummary,
+  ChatContext,
+  ExtractedInfo,
+} from '@/lib/aiChatContext';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
 }
 
+interface LeadForm {
+  name: string;
+  email: string;
+  phone: string;
+}
+
 export default function AIAssistant() {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: 'assistant',
-      content: "Hello! I'm Luke's AI assistant. I'm here to help you with:\n\n• Booking salon appointments\n• Learning about our services\n• Professional education courses\n• General questions about hair care\n\nWhat can I help you with today?",
-    },
-  ]);
-  const [quickReplies, setQuickReplies] = useState<string[]>([
-    'Book an appointment',
-    'View services & prices',
-    'Education courses',
-    'Hair care advice',
-  ]);
+  const [context, setContext] = useState<ChatContext>({ type: 'general', userType: 'individual' });
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [quickReplies, setQuickReplies] = useState<string[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [shouldShowLeadCapture, setShouldShowLeadCapture] = useState(false);
+  const [extractedInfo, setExtractedInfo] = useState<ExtractedInfo>({});
+  const [leadForm, setLeadForm] = useState<LeadForm>({ name: '', email: '', phone: '' });
+  const [leadCaptured, setLeadCaptured] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Expose methods globally for external triggers
+  // Detect context on mount and set initial state
   useEffect(() => {
+    const detectedContext = detectContextFromPage();
+    setContext(detectedContext);
+    
+    // Set initial message based on context
+    const initialMessage = getInitialMessage(detectedContext);
+    setMessages([{ role: 'assistant', content: initialMessage }]);
+    
+    // Set quick replies based on context
+    setQuickReplies(getQuickActionsForContext(detectedContext).map(action => action.label));
+  }, []);
+
+  // Listen for custom open events with context
+  useEffect(() => {
+    const handleOpenChat = (e: any) => {
+      setIsOpen(true);
+      
+      if (e.detail?.context === 'cpd') {
+        const cpdContext: ChatContext = { type: 'cpd', userType: 'institution' };
+        setContext(cpdContext);
+        
+        const initialMessage = getInitialMessage(cpdContext);
+        setMessages([{ role: 'assistant', content: initialMessage }]);
+        setQuickReplies(getQuickActionsForContext(cpdContext).map(action => action.label));
+        
+        if (e.detail?.initialMessage) {
+          // Auto-send initial message after a short delay
+          setTimeout(() => {
+            handleSendMessage(e.detail.initialMessage);
+          }, 500);
+        }
+      }
+    };
+    
     if (typeof window !== 'undefined') {
+      window.addEventListener('openAIChat', handleOpenChat);
+      
+      // Legacy support
       (window as any).openChatWithMessage = (message: string) => {
         setIsOpen(true);
-        setInput(message);
-        // Auto-submit after a short delay
         setTimeout(() => {
-          const form = document.querySelector('form[data-chat-form]') as HTMLFormElement;
-          if (form) {
-            const event = new Event('submit', { bubbles: true, cancelable: true });
-            form.dispatchEvent(event);
-          }
+          handleSendMessage(message);
         }, 500);
       };
     }
+    
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('openAIChat', handleOpenChat);
+      }
+    };
   }, []);
 
   const scrollToBottom = () => {
@@ -54,22 +99,51 @@ export default function AIAssistant() {
     scrollToBottom();
   }, [messages]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) return;
+  // Helper functions
+  const getInitialMessage = (ctx: ChatContext): string => {
+    if (ctx.type === 'cpd') {
+      return "Hello! I'm Luke's CPD Partnership Assistant. I'm here to help you find the perfect professional development programme for your students.\n\nI can help you explore our CPD-certified courses in:\n\n• Communication & Influence\n• Coaching for Success\n• Emotional Intelligence & Leadership\n• Mindset & Motivation\n\nTell me a bit about your institution and what you're looking for?";
+    }
+    
+    return "Hello! I'm Luke's AI assistant. I'm here to help you with:\n\n• Booking salon appointments\n• Learning about our services\n• Professional education courses\n• General questions about hair care\n\nWhat can I help you with today?";
+  };
 
-    const userMessage = input.trim();
+  const getQuickActionsForContext = (ctx: ChatContext) => {
+    if (ctx.type === 'cpd') {
+      return [
+        { label: "View CPD programmes", message: "What CPD training programmes do you offer?" },
+        { label: "Partnership process", message: "How does the partnership process work?" },
+        { label: "Pricing & availability", message: "What are your pricing options and availability?" },
+        { label: "Student outcomes", message: "What outcomes can we expect for our students?" },
+      ];
+    }
+    
+    return [
+      { label: "Book appointment", message: "I'd like to book a salon appointment" },
+      { label: "View services", message: "What services do you offer?" },
+      { label: "Education courses", message: "Tell me about your education courses" },
+      { label: "Hair care advice", message: "I need advice about hair care" },
+    ];
+  };
+
+  const handleSendMessage = async (messageText: string) => {
+    if (!messageText.trim() || isLoading) return;
+
+    const userMessage = messageText.trim();
+    const newMessages = [...messages, { role: 'user' as const, content: userMessage }];
+    
+    setMessages(newMessages);
     setInput('');
-    setMessages((prev) => [...prev, { role: 'user', content: userMessage }]);
     setIsLoading(true);
+    setQuickReplies([]); // Clear quick replies after first message
 
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: [...messages, { role: 'user', content: userMessage }],
-          page: window.location.pathname,
+          messages: newMessages,
+          context,
         }),
       });
 
@@ -84,19 +158,82 @@ export default function AIAssistant() {
       }
 
       setMessages((prev) => [...prev, { role: 'assistant', content: data.message || data.content || 'No response received' }]);
+      
+      // Check if we should offer lead capture
+      if (data.offerLeadCapture || shouldOfferLeadCapture(data.extractedInfo || extractInstitutionalInfo(newMessages), newMessages, context)) {
+        setExtractedInfo(data.extractedInfo || extractInstitutionalInfo(newMessages));
+        setShouldShowLeadCapture(true);
+      }
     } catch (error) {
       console.error('Chat error:', error);
       setMessages((prev) => [
         ...prev,
         {
           role: 'assistant',
-          content: "I'm sorry, the AI assistant is currently unavailable (OpenAI API key not configured). Please contact us directly at luke@lukeroberthair.com or call 07862 054292.",
+          content: "I'm sorry, I'm having trouble connecting right now. Please try again or contact us directly at luke@lukeroberthair.com",
         },
       ]);
     } finally {
       setIsLoading(false);
     }
   };
+
+  const handleCaptureLeadInChat = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const conversationSummary = generateConversationSummary(messages, extractedInfo);
+      
+      const response = await fetch('/api/chat/capture-lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: leadForm.name,
+          email: leadForm.email,
+          phone: leadForm.phone,
+          context,
+          extractedInfo,
+          conversationSummary,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to capture lead');
+      }
+
+      setShouldShowLeadCapture(false);
+      setLeadCaptured(true);
+      setMessages((prev) => [...prev, { 
+        role: 'assistant', 
+        content: data.message || "Perfect! I've passed your details to Luke. You'll hear from us within 24 hours to arrange your discovery call."
+      }]);
+    } catch (error: any) {
+      console.error('Lead capture error:', error);
+      setMessages((prev) => [...prev, {
+        role: 'assistant',
+        content: "I'm sorry, there was an error saving your information. Please try filling out the form on the website instead.",
+      }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await handleSendMessage(input);
+  };
+
+  // Get context-aware header information
+  const headerTitle = context.type === 'cpd' 
+    ? "Luke Robert Hair"
+    : "Luke Robert Hair";
+    
+  const headerSubtitle = context.type === 'cpd'
+    ? "CPD Partnership Assistant"
+    : "AI Assistant";
 
   return (
     <>
@@ -121,22 +258,36 @@ export default function AIAssistant() {
             className="fixed bottom-24 right-6 z-50 w-96 max-w-[calc(100vw-3rem)] bg-white rounded-2xl shadow-2xl overflow-hidden"
           >
             {/* Header */}
-            <div className="bg-sage text-white p-6">
+            <div className={`${context.type === 'cpd' ? 'bg-indigo-600' : 'bg-sage'} text-white p-6`}>
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center overflow-hidden">
-                  <Image
-                    src="/logo-white.svg"
-                    alt="Luke Robert Hair"
-                    width={40}
-                    height={40}
-                    className="object-contain"
-                  />
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  context.type === 'cpd' ? 'bg-white/20' : 'bg-white/10'
+                }`}>
+                  {context.type === 'cpd' ? (
+                    <GraduationCap className="w-6 h-6 text-white" />
+                  ) : (
+                    <Image
+                      src="/logo-white.svg"
+                      alt="Luke Robert Hair"
+                      width={40}
+                      height={40}
+                      className="object-contain"
+                    />
+                  )}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg">Luke Robert Hair</h3>
-                  <p className="text-xs text-sage-light">AI Assistant</p>
+                  <h3 className="font-semibold text-lg">{headerTitle}</h3>
+                  <p className="text-xs opacity-90">{headerSubtitle}</p>
                 </div>
               </div>
+              {context.type === 'cpd' && (
+                <div className="flex items-center gap-2 mt-3 pt-3 border-t border-white/20">
+                  <Building className="w-4 h-4" />
+                  <span className="text-xs font-medium">
+                    College & Institutional Enquiries
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Messages */}
@@ -191,7 +342,91 @@ export default function AIAssistant() {
                   </div>
                 </div>
               ))}
-              {isLoading && (
+              
+              {/* Lead Capture Form */}
+              {shouldShowLeadCapture && !leadCaptured && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-sage/10 border-2 border-sage rounded-xl p-6"
+                >
+                  <h3 className="font-semibold text-graphite mb-3 flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 text-sage" />
+                    Ready to Connect?
+                  </h3>
+                  <p className="text-sm text-gray-700 mb-4">
+                    I have the information I need. Would you like me to arrange a discovery 
+                    call with Luke to discuss your CPD needs?
+                  </p>
+                  
+                  <form onSubmit={handleCaptureLeadInChat} className="space-y-3">
+                    <input
+                      type="text"
+                      placeholder="Your Name"
+                      value={leadForm.name}
+                      onChange={(e) => setLeadForm({...leadForm, name: e.target.value})}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sage focus:border-transparent"
+                      required
+                    />
+                    <input
+                      type="email"
+                      placeholder="Email Address"
+                      value={leadForm.email}
+                      onChange={(e) => setLeadForm({...leadForm, email: e.target.value})}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sage focus:border-transparent"
+                      required
+                    />
+                    <input
+                      type="tel"
+                      placeholder="Phone Number (optional)"
+                      value={leadForm.phone}
+                      onChange={(e) => setLeadForm({...leadForm, phone: e.target.value})}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sage focus:border-transparent"
+                    />
+                    
+                    <button
+                      type="submit"
+                      disabled={isLoading}
+                      className="w-full py-3 bg-sage text-white rounded-lg font-semibold hover:bg-graphite transition-colors disabled:opacity-50"
+                    >
+                      {isLoading ? 'Submitting...' : 'Yes, Arrange a Discovery Call'}
+                    </button>
+                    
+                    <button
+                      type="button"
+                      onClick={() => setShouldShowLeadCapture(false)}
+                      className="w-full py-2 text-gray-600 hover:text-graphite transition-colors"
+                    >
+                      Not right now
+                    </button>
+                  </form>
+                </motion.div>
+              )}
+
+              {/* Success Message */}
+              {leadCaptured && (
+                <motion.div
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="bg-green-50 border-2 border-green-500 rounded-xl p-6 text-center"
+                >
+                  <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
+                  <h3 className="font-semibold text-graphite mb-2">
+                    Discovery Call Requested!
+                  </h3>
+                  <p className="text-sm text-gray-700">
+                    Luke will personally reach out within 24 hours to discuss your 
+                    CPD training needs. Check your email for confirmation.
+                  </p>
+                </motion.div>
+              )}
+
+              {isLoading && context.type === 'cpd' ? (
+                <div className="flex items-center gap-2 text-sm text-gray-500 px-4 py-2">
+                  <GraduationCap className="w-4 h-4 animate-pulse" />
+                  <span>Analyzing your institutional needs...</span>
+                </div>
+              ) : isLoading ? (
                 <div className="flex justify-start">
                   <div className="bg-white text-graphite p-3 rounded-2xl rounded-bl-sm shadow-sm">
                     <div className="flex gap-1">
@@ -201,7 +436,7 @@ export default function AIAssistant() {
                     </div>
                   </div>
                 </div>
-              )}
+              ) : null}
               <div ref={messagesEndRef} />
             </div>
 
@@ -232,3 +467,4 @@ export default function AIAssistant() {
     </>
   );
 }
+

@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import { 
+  getSystemPromptForContext,
+  extractInstitutionalInfo,
+  shouldOfferLeadCapture,
+  ChatContext,
+} from '@/lib/aiChatContext';
 
 const openai = process.env.OPENAI_API_KEY ? new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -7,7 +13,7 @@ const openai = process.env.OPENAI_API_KEY ? new OpenAI({
 
 export async function POST(request: NextRequest) {
   try {
-    const { messages, page } = await request.json();
+    const { messages, context, page } = await request.json();
 
     if (!openai) {
       return NextResponse.json(
@@ -16,8 +22,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Context-aware system prompt based on current page
-    const systemPrompt = getSystemPrompt(page);
+    // Get context-aware system prompt
+    let systemPrompt: string;
+    if (context && context.type) {
+      systemPrompt = getSystemPromptForContext(context as ChatContext);
+    } else {
+      // Fallback to page-based prompt
+      systemPrompt = getSystemPrompt(page || '/');
+    }
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
@@ -26,10 +38,22 @@ export async function POST(request: NextRequest) {
         ...messages,
       ],
       temperature: 0.7,
-      max_tokens: 500,
+      max_tokens: 600,
     });
 
     const assistantMessage = completion.choices[0].message.content;
+
+    // For CPD context, extract institutional info and check if we should offer lead capture
+    if (context && context.type === 'cpd') {
+      const extractedInfo = extractInstitutionalInfo(messages);
+      const shouldOffer = shouldOfferLeadCapture(extractedInfo, messages, context as ChatContext);
+      
+      return NextResponse.json({ 
+        message: assistantMessage,
+        extractedInfo,
+        offerLeadCapture: shouldOffer,
+      });
+    }
 
     return NextResponse.json({ message: assistantMessage });
   } catch (error) {

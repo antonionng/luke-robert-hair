@@ -84,16 +84,16 @@ export default function StatsGrid({ stats }: StatsGridProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: index * 0.05 }}
-          className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow"
+          className="admin-card-hover p-6"
         >
           <div className="flex items-center justify-between mb-4">
-            <div className={`w-12 h-12 ${stat.color} rounded-xl flex items-center justify-center`}>
+            <div className={`w-12 h-12 ${stat.color} rounded-xl flex items-center justify-center shadow-lg`}>
               <stat.icon className="text-white" size={24} />
             </div>
-            <span className="text-sm text-green-600 font-medium">{stat.change}</span>
+            <span className="text-sm text-green-400 font-medium">{stat.change}</span>
           </div>
-          <p className="text-3xl font-bold mb-1 text-graphite">{stat.value}</p>
-          <p className="text-graphite/60 text-sm">{stat.label}</p>
+          <p className="text-3xl font-bold mb-1 text-white">{stat.value}</p>
+          <p className="text-zinc-400 text-sm">{stat.label}</p>
         </motion.div>
       ))}
     </div>
