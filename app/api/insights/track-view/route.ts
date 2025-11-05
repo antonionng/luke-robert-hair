@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
                       request.headers.get('x-real-ip') || 
                       undefined;
 
-    const result = await trackContentEvent({
+    await trackContentEvent({
       contentId,
       type: 'view',
       sessionId,
@@ -30,10 +30,6 @@ export async function POST(request: NextRequest) {
       userAgent,
       ipAddress,
     });
-
-    if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 500 });
-    }
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
