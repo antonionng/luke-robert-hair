@@ -77,7 +77,7 @@ export default function ContentQueueTable({
 
   const getSourceIcon = (source: string, aiGenerated: boolean) => {
     if (aiGenerated) {
-      return <Sparkles className="w-4 h-4 text-purple-500" title="AI Generated" />;
+      return <span title="AI Generated"><Sparkles className="w-4 h-4 text-purple-500" /></span>;
     }
     return null;
   };
