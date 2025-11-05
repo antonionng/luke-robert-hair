@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
 
     const result = await trackContentEvent({
       contentId,
-      eventType: 'view',
+      type: 'view',
       sessionId,
       source,
       medium,

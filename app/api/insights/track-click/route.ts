@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
 
     const result = await trackContentEvent({
       contentId,
-      eventType,
+      type: eventType as any,
       sessionId,
       userAgent,
       ipAddress,
