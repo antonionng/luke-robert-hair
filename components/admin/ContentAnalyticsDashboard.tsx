@@ -28,7 +28,7 @@ interface ContentAnalytics {
 export default function ContentAnalyticsDashboard() {
   const [loading, setLoading] = useState(true);
   const [analytics, setAnalytics] = useState<ContentAnalytics[]>([]);
-  const [sortBy, setSortBy] = useState<'views' | 'clicks' | 'leads'>('views');
+  const [sortBy, setSortBy] = useState<'views' | 'clicks' | 'leadsGenerated'>('views');
 
   useEffect(() => {
     fetchAnalytics();
@@ -130,9 +130,9 @@ export default function ContentAnalyticsDashboard() {
                 By Clicks
               </button>
               <button
-                onClick={() => setSortBy('leads')}
+                onClick={() => setSortBy('leadsGenerated')}
                 className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
-                  sortBy === 'leads'
+                  sortBy === 'leadsGenerated'
                     ? 'admin-btn-primary'
                     : 'admin-btn-secondary'
                 }`}
