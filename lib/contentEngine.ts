@@ -762,16 +762,18 @@ async function buildContentContext(
     ? requestGoals.split(/[;,\n]/).map(item => item.trim()).filter(Boolean)
     : [];
 
-  const targetKeywords = Array.isArray(options.request?.target_keywords)
-    ? (options.request?.target_keywords as string[])
-    : typeof options.request?.target_keywords === 'string'
-    ? options.request?.target_keywords.split(/[;,\n]/).map(item => item.trim()).filter(Boolean)
+  const requestKeywords = options.request?.target_keywords;
+  const targetKeywords = Array.isArray(requestKeywords)
+    ? (requestKeywords as string[])
+    : typeof requestKeywords === 'string'
+    ? requestKeywords.split(/[;,\n]/).map(item => item.trim()).filter(Boolean)
     : [];
 
-  const inspirationLinks = Array.isArray(options.request?.inspiration_links)
-    ? (options.request?.inspiration_links as string[])
-    : typeof options.request?.inspiration_links === 'string'
-    ? options.request?.inspiration_links.split(/[\s,]+/).filter(Boolean)
+  const requestLinks = options.request?.inspiration_links;
+  const inspirationLinks = Array.isArray(requestLinks)
+    ? (requestLinks as string[])
+    : typeof requestLinks === 'string'
+    ? requestLinks.split(/[\s,]+/).filter(Boolean)
     : [];
 
   return {
