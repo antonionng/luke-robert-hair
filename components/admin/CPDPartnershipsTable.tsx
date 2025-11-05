@@ -41,12 +41,14 @@ export default function CPDPartnershipsTable({ partnerships, searchTerm, onViewP
 
   const getDeliveryBadge = (preference?: string) => {
     if (!preference) return null;
-    const styles = {
+    const prefLower = preference.toLowerCase();
+    const styles: Record<string, string> = {
       'on-site': 'bg-indigo-500/20 text-indigo-400',
       'online': 'bg-cyan-500/20 text-cyan-400',
       'hybrid': 'bg-purple-500/20 text-purple-400',
+      'flexible': 'bg-green-500/20 text-green-400',
     };
-    return styles[preference as keyof typeof styles] || 'bg-zinc-700 text-zinc-400';
+    return styles[prefLower] || 'bg-zinc-700 text-zinc-400';
   };
 
   const filteredPartnerships = partnerships.filter(partnership => {
@@ -149,8 +151,8 @@ export default function CPDPartnershipsTable({ partnerships, searchTerm, onViewP
                   </div>
                 </td>
                 <td className="admin-table-cell">
-                  <span className={`admin-badge border ${getStatusBadge(partnership.lifecycle_stage)}`}>
-                    {partnership.lifecycle_stage.charAt(0).toUpperCase() + partnership.lifecycle_stage.slice(1)}
+                  <span className={`admin-badge border ${getStatusBadge(partnership.lifecycle_stage || 'new')}`}>
+                    {partnership.lifecycle_stage ? partnership.lifecycle_stage.charAt(0).toUpperCase() + partnership.lifecycle_stage.slice(1) : 'New'}
                   </span>
                   <p className="text-xs text-zinc-500 mt-2">
                     {new Date(partnership.enquiryDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}

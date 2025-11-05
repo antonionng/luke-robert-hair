@@ -19,6 +19,14 @@ export default function ContactPage() {
     e.preventDefault();
     setIsSubmitting(true);
 
+    console.log('📤 [CONTACT FORM] Submitting:', {
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      type: formData.type,
+      messageLength: formData.message.length
+    });
+
     try {
       const response = await fetch('/api/contact', {
         method: 'POST',
@@ -27,11 +35,19 @@ export default function ContactPage() {
       });
 
       if (response.ok) {
+        const data = await response.json();
+        console.log('✅ [CONTACT FORM] Success:', {
+          leadId: data.leadId,
+          type: formData.type
+        });
         setSubmitted(true);
         setFormData({ name: '', email: '', phone: '', type: 'general', message: '' });
+      } else {
+        const errorData = await response.json();
+        console.error('❌ [CONTACT FORM] Failed:', errorData);
       }
     } catch (error) {
-      console.error('Contact form error:', error);
+      console.error('❌ [CONTACT FORM] Error:', error);
     } finally {
       setIsSubmitting(false);
     }

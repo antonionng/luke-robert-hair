@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['images.unsplash.com', 'oaidalleapiprodscus.blob.core.windows.net'],
+    domains: ['images.unsplash.com', 'source.unsplash.com', 'oaidalleapiprodscus.blob.core.windows.net', 'picsum.photos'],
   },
 }
 

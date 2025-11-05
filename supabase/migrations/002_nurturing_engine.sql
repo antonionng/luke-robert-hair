@@ -108,46 +108,134 @@ CREATE TABLE IF NOT EXISTS public.lead_score_history (
 -- CONTENT MANAGEMENT
 -- =====================================================
 
--- Content queue for AI-generated blog posts
+-- Content requests - briefs, manual ideas, and AI-assisted prompts
+CREATE TABLE IF NOT EXISTS public.content_requests (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+
+    -- Request metadata
+    requested_by TEXT,
+    request_source TEXT NOT NULL DEFAULT 'manual' CHECK (request_source IN ('manual', 'ai_assist', 'automation')),
+    request_type TEXT NOT NULL DEFAULT 'blog_post' CHECK (request_type IN ('blog_post', 'campaign', 'announcement', 'evergreen')),
+    status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'queued', 'generating', 'ready', 'completed', 'cancelled')),
+
+    -- Brief
+    title TEXT,
+    topic TEXT NOT NULL,
+    category TEXT,
+    summary TEXT,
+    brief TEXT,
+    audience TEXT,
+    tone TEXT,
+    objectives TEXT,
+    target_keywords TEXT[] DEFAULT '{}'::TEXT[],
+    inspiration_links TEXT[] DEFAULT '{}'::TEXT[],
+    notes TEXT,
+
+    -- Scheduling preferences
+    preferred_publish_date TIMESTAMPTZ,
+    scheduled_for TIMESTAMPTZ,
+    auto_publish BOOLEAN DEFAULT false,
+    priority INTEGER DEFAULT 3 CHECK (priority >= 1 AND priority <= 5),
+
+    -- AI context
+    ai_context JSONB DEFAULT '{}'::JSONB,
+    metadata JSONB DEFAULT '{}'::JSONB
+);
+
+-- Content queue for AI-generated and curated posts
 CREATE TABLE IF NOT EXISTS public.content_queue (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
-    
+
+    -- Linkage
+    request_id UUID REFERENCES public.content_requests(id) ON DELETE SET NULL,
+
     -- Content Details
     title TEXT NOT NULL,
     slug TEXT UNIQUE,
     excerpt TEXT,
     content TEXT NOT NULL,
-    category TEXT NOT NULL CHECK (category IN ('Salon Tips', 'Education Insights', 'Product Highlights')),
-    
+    category TEXT NOT NULL CHECK (char_length(category) > 0),
+
     -- Media
     image_url TEXT,
     image_prompt TEXT, -- DALL-E prompt used
-    
+    hero_alt TEXT,
+    hero_caption TEXT,
+
     -- Publishing
-    status TEXT DEFAULT 'queued' CHECK (status IN ('queued', 'generating', 'review', 'scheduled', 'published', 'rejected')),
+    status TEXT DEFAULT 'queued' CHECK (status IN ('draft', 'queued', 'generating', 'review', 'scheduled', 'published', 'rejected', 'archived')),
+    source TEXT DEFAULT 'automation' CHECK (source IN ('automation', 'manual', 'ai_assist', 'repurposed')),
     scheduled_for TIMESTAMPTZ,
     published_at TIMESTAMPTZ,
-    
+    pinned_until TIMESTAMPTZ,
+    featured BOOLEAN DEFAULT false,
+
     -- AI Metadata
     ai_generated BOOLEAN DEFAULT true,
     ai_model TEXT DEFAULT 'gpt-4o-mini',
     generation_prompt TEXT,
-    
+    outline JSONB DEFAULT '[]'::JSONB,
+    editor_state JSONB DEFAULT '[]'::JSONB,
+    metadata JSONB DEFAULT '{}'::JSONB,
+
     -- SEO
+    seo_title TEXT,
     meta_description TEXT,
     keywords TEXT[],
-    
-    -- Performance Tracking
+    insight_tags TEXT[] DEFAULT '{}'::TEXT[],
+
+    -- CTAs
+    cta_label TEXT,
+    cta_url TEXT,
+    cta_description TEXT,
+
+    -- Preview & Editing
+    preview_html TEXT,
+    preview_generated_at TIMESTAMPTZ,
+    last_previewed_at TIMESTAMPTZ,
+    last_previewed_by TEXT,
+    editor_notes TEXT,
+
+    -- Performance Indicators
+    word_count INTEGER DEFAULT 0 CHECK (word_count >= 0),
+    reading_time_minutes INTEGER CHECK (reading_time_minutes IS NULL OR reading_time_minutes >= 0),
+
+    -- Tracking
     views INTEGER DEFAULT 0,
     clicks INTEGER DEFAULT 0,
     leads_generated INTEGER DEFAULT 0,
-    
+
     -- Approval
     reviewed_by TEXT,
     reviewed_at TIMESTAMPTZ,
     rejection_reason TEXT
+);
+
+-- Content analytics events - granular tracking for insights
+CREATE TABLE IF NOT EXISTS public.content_analytics_events (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+
+    content_id UUID NOT NULL REFERENCES public.content_queue(id) ON DELETE CASCADE,
+    session_id TEXT,
+
+    event_type TEXT NOT NULL CHECK (event_type IN ('view', 'click', 'cta_click', 'share', 'impression')),
+    event_value INTEGER DEFAULT 1,
+
+    source TEXT,
+    medium TEXT,
+    campaign TEXT,
+    referrer TEXT,
+
+    user_agent TEXT,
+    device TEXT,
+    ip_address TEXT,
+
+    metadata JSONB DEFAULT '{}'::JSONB
 );
 
 -- Content topics - Track what's been written about
@@ -412,11 +500,25 @@ CREATE INDEX IF NOT EXISTS idx_activities_lead_id ON public.lead_activities(lead
 CREATE INDEX IF NOT EXISTS idx_activities_type ON public.lead_activities(activity_type);
 CREATE INDEX IF NOT EXISTS idx_activities_created ON public.lead_activities(created_at DESC);
 
+-- Content requests indexes
+CREATE INDEX IF NOT EXISTS idx_content_requests_status ON public.content_requests(status);
+CREATE INDEX IF NOT EXISTS idx_content_requests_scheduled ON public.content_requests(scheduled_for) WHERE scheduled_for IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_content_requests_source ON public.content_requests(request_source);
+CREATE INDEX IF NOT EXISTS idx_content_requests_priority ON public.content_requests(priority DESC);
+
 -- Content queue indexes
 CREATE INDEX IF NOT EXISTS idx_content_status ON public.content_queue(status);
 CREATE INDEX IF NOT EXISTS idx_content_scheduled ON public.content_queue(scheduled_for) WHERE status = 'scheduled';
 CREATE INDEX IF NOT EXISTS idx_content_category ON public.content_queue(category);
 CREATE INDEX IF NOT EXISTS idx_content_published ON public.content_queue(published_at DESC) WHERE status = 'published';
+CREATE INDEX IF NOT EXISTS idx_content_source ON public.content_queue(source);
+CREATE INDEX IF NOT EXISTS idx_content_request_id ON public.content_queue(request_id);
+CREATE INDEX IF NOT EXISTS idx_content_featured ON public.content_queue(featured) WHERE featured = true;
+
+-- Content analytics indexes
+CREATE INDEX IF NOT EXISTS idx_content_events_content ON public.content_analytics_events(content_id);
+CREATE INDEX IF NOT EXISTS idx_content_events_type ON public.content_analytics_events(event_type);
+CREATE INDEX IF NOT EXISTS idx_content_events_created ON public.content_analytics_events(created_at DESC);
 
 -- Email logs indexes
 CREATE INDEX IF NOT EXISTS idx_email_lead_id ON public.email_logs(lead_id);
@@ -460,6 +562,9 @@ $$ LANGUAGE plpgsql;
 
 -- Apply updated_at triggers
 CREATE TRIGGER update_leads_updated_at BEFORE UPDATE ON public.leads
+FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_content_requests_updated_at BEFORE UPDATE ON public.content_requests
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_content_updated_at BEFORE UPDATE ON public.content_queue
@@ -517,7 +622,9 @@ ALTER TABLE public.leads ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.lead_activities ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.lead_score_history ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.content_queue ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.content_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.content_topics ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.content_analytics_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.email_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sms_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.automation_queue ENABLE ROW LEVEL SECURITY;
@@ -530,7 +637,9 @@ CREATE POLICY "Enable all access for service role" ON public.leads FOR ALL USING
 CREATE POLICY "Enable all access for service role" ON public.lead_activities FOR ALL USING (true);
 CREATE POLICY "Enable all access for service role" ON public.lead_score_history FOR ALL USING (true);
 CREATE POLICY "Enable all access for service role" ON public.content_queue FOR ALL USING (true);
+CREATE POLICY "Enable all access for service role" ON public.content_requests FOR ALL USING (true);
 CREATE POLICY "Enable all access for service role" ON public.content_topics FOR ALL USING (true);
+CREATE POLICY "Enable all access for service role" ON public.content_analytics_events FOR ALL USING (true);
 CREATE POLICY "Enable all access for service role" ON public.email_logs FOR ALL USING (true);
 CREATE POLICY "Enable all access for service role" ON public.sms_logs FOR ALL USING (true);
 CREATE POLICY "Enable all access for service role" ON public.automation_queue FOR ALL USING (true);

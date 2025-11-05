@@ -28,19 +28,17 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
   const [editedLead, setEditedLead] = useState(lead);
   const [activities, setActivities] = useState<LeadActivity[]>([]);
   const [isLoadingActivities, setIsLoadingActivities] = useState(false);
+  // Preserve lead during exit animation
+  const [displayLead, setDisplayLead] = useState(lead);
+  // Separate state for notes to allow independent editing
+  const [notes, setNotes] = useState(lead?.notes || '');
+  const [isSavingNotes, setIsSavingNotes] = useState(false);
+  const [notesChanged, setNotesChanged] = useState(false);
 
-  useEffect(() => {
-    if (isOpen && lead) {
-      setEditedLead(lead);
-      fetchActivities();
-    }
-  }, [isOpen, lead]);
-
-  const fetchActivities = async () => {
-    if (!lead?.id) return;
+  const fetchActivities = async (leadId: string) => {
     setIsLoadingActivities(true);
     try {
-      const res = await fetch(`/api/admin/lead-activities?leadId=${lead.id}`);
+      const res = await fetch(`/api/admin/lead-activities?leadId=${leadId}`);
       if (res.ok) {
         const data = await res.json();
         setActivities(data);
@@ -52,10 +50,21 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
     }
   };
 
+  useEffect(() => {
+    if (isOpen && lead) {
+      setDisplayLead(lead);
+      setEditedLead(lead);
+      setNotes(lead.notes || '');
+      setNotesChanged(false);
+      fetchActivities(lead.id);
+    }
+  }, [isOpen, lead]);
+
   const handleSave = async () => {
+    if (!displayLead) return;
     setIsSaving(true);
     try {
-      await onUpdate(lead.id, editedLead);
+      await onUpdate(displayLead.id, editedLead);
       setIsEditing(false);
     } catch (error) {
       console.error('Failed to update lead:', error);
@@ -65,17 +74,35 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
     }
   };
 
-  if (!lead) return null;
+  const handleSaveNotes = async () => {
+    if (!displayLead) return;
+    setIsSavingNotes(true);
+    try {
+      await onUpdate(displayLead.id, { notes });
+      setNotesChanged(false);
+      // Update the displayLead to reflect the saved notes
+      setDisplayLead({ ...displayLead, notes });
+    } catch (error) {
+      console.error('Failed to save notes:', error);
+      alert('Failed to save notes');
+    } finally {
+      setIsSavingNotes(false);
+    }
+  };
 
-  const isCPD = lead.leadType === 'cpd' || lead.institution;
-  const scoreColor = lead.score >= 70 ? 'text-green-600' : lead.score >= 40 ? 'text-yellow-600' : 'text-red-600';
+  const isCPD = displayLead?.leadType === 'cpd' || displayLead?.institution;
+  const scoreColor = displayLead?.score >= 70 ? 'text-green-600' : displayLead?.score >= 40 ? 'text-yellow-600' : 'text-red-600';
+
+  // Don't render if no lead to display and modal is closed
+  if (!displayLead && !isOpen) return null;
 
   return (
     <AnimatePresence>
-      {isOpen && (
+      {isOpen && displayLead && (
         <>
           {/* Backdrop */}
           <motion.div
+            key="backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -85,6 +112,7 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
 
           {/* Modal */}
           <motion.div
+            key="modal"
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -104,7 +132,7 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
                           className="bg-white/20 px-3 py-1 rounded-lg border border-white/30 focus:outline-none focus:border-white"
                         />
                       ) : (
-                        lead.name
+                        displayLead.name
                       )}
                     </h2>
                     {isCPD && (
@@ -114,7 +142,7 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
                     )}
                   </div>
                   <p className="text-sm text-white/80 mt-1">
-                    {lead.lifecycle_stage?.charAt(0).toUpperCase() + lead.lifecycle_stage?.slice(1)} • Created {new Date(lead.enquiryDate || lead.createdAt).toLocaleDateString('en-GB')}
+                    {displayLead.lifecycle_stage?.charAt(0).toUpperCase() + displayLead.lifecycle_stage?.slice(1)} • Created {new Date(displayLead.enquiryDate || displayLead.createdAt).toLocaleDateString('en-GB')}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -166,8 +194,8 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
                               className="w-full px-3 py-2 border border-mist rounded-lg focus:outline-none focus:ring-2 focus:ring-sage/20"
                             />
                           ) : (
-                            <a href={`mailto:${lead.email}`} className="text-sage hover:underline flex items-center gap-1">
-                              {lead.email}
+                            <a href={`mailto:${displayLead.email}`} className="text-sage hover:underline flex items-center gap-1">
+                              {displayLead.email}
                               <ExternalLink size={14} />
                             </a>
                           )}
@@ -182,8 +210,8 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
                               className="w-full px-3 py-2 border border-mist rounded-lg focus:outline-none focus:ring-2 focus:ring-sage/20"
                             />
                           ) : (
-                            <a href={`tel:${lead.phone}`} className="text-sage hover:underline flex items-center gap-1">
-                              {lead.phone}
+                            <a href={`tel:${displayLead.phone}`} className="text-sage hover:underline flex items-center gap-1">
+                              {displayLead.phone}
                               <ExternalLink size={14} />
                             </a>
                           )}
@@ -209,7 +237,7 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
                                 className="w-full px-3 py-2 border border-mist rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200"
                               />
                             ) : (
-                              <p className="text-graphite font-medium">{lead.institution || 'N/A'}</p>
+                              <p className="text-graphite font-medium">{displayLead.institution || 'N/A'}</p>
                             )}
                           </div>
                           <div>
@@ -222,7 +250,7 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
                                 className="w-full px-3 py-2 border border-mist rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200"
                               />
                             ) : (
-                              <p className="text-graphite font-medium">{lead.jobTitle || 'N/A'}</p>
+                              <p className="text-graphite font-medium">{displayLead.jobTitle || 'N/A'}</p>
                             )}
                           </div>
                           <div>
@@ -237,7 +265,7 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
                             ) : (
                               <p className="text-graphite font-medium flex items-center gap-1">
                                 <Users size={16} />
-                                {lead.studentNumbers || 'N/A'}
+                                {displayLead.studentNumbers || 'N/A'}
                               </p>
                             )}
                           </div>
@@ -254,7 +282,7 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
                                 <option value="hybrid">Hybrid</option>
                               </select>
                             ) : (
-                              <p className="text-graphite font-medium">{lead.deliveryPreference || 'N/A'}</p>
+                              <p className="text-graphite font-medium">{displayLead.deliveryPreference || 'N/A'}</p>
                             )}
                           </div>
                         </div>
@@ -278,13 +306,13 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
                               className="w-full px-3 py-2 border border-mist rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200"
                             />
                           ) : (
-                            <p className="text-graphite font-medium">{lead.course}</p>
+                            <p className="text-graphite font-medium">{displayLead.course}</p>
                           )}
                         </div>
-                        {!isCPD && lead.experienceLevel && (
+                        {!isCPD && displayLead.experienceLevel && (
                           <div>
                             <label className="text-sm text-graphite/70 mb-1 block">Experience Level</label>
-                            <p className="text-graphite font-medium">{lead.experienceLevel}</p>
+                            <p className="text-graphite font-medium">{displayLead.experienceLevel}</p>
                           </div>
                         )}
                       </div>
@@ -292,13 +320,36 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
 
                     {/* Notes */}
                     <div>
-                      <label className="text-sm text-graphite/70 mb-2 block font-medium">Notes</label>
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="text-sm text-graphite/70 font-medium">Notes</label>
+                        {notesChanged && (
+                          <button
+                            onClick={handleSaveNotes}
+                            disabled={isSavingNotes}
+                            className="px-4 py-1.5 bg-sage text-white rounded-lg text-sm font-medium hover:bg-sage/90 transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                          >
+                            {isSavingNotes ? (
+                              <>
+                                <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                Saving...
+                              </>
+                            ) : (
+                              <>
+                                <Save size={14} />
+                                Save Notes
+                              </>
+                            )}
+                          </button>
+                        )}
+                      </div>
                       <textarea
-                        value={isEditing ? editedLead.notes || '' : lead.notes || ''}
-                        onChange={(e) => isEditing && setEditedLead({ ...editedLead, notes: e.target.value })}
-                        disabled={!isEditing}
+                        value={notes}
+                        onChange={(e) => {
+                          setNotes(e.target.value);
+                          setNotesChanged(true);
+                        }}
                         placeholder="Add notes about this lead..."
-                        className="w-full px-4 py-3 border border-mist rounded-xl focus:outline-none focus:ring-2 focus:ring-sage/20 min-h-[100px] disabled:bg-gray-50"
+                        className="w-full px-4 py-3 border border-mist rounded-xl focus:outline-none focus:ring-2 focus:ring-sage/20 min-h-[100px] bg-white"
                       />
                     </div>
 
@@ -342,19 +393,19 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
                           Lead Score
                         </h3>
                         <span className={`text-2xl font-bold ${scoreColor}`}>
-                          {lead.score || 0}
+                          {displayLead.score || 0}
                         </span>
                       </div>
                       <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
                         <div
                           className={`absolute h-full ${
-                            lead.score >= 70 ? 'bg-green-500' : lead.score >= 40 ? 'bg-yellow-500' : 'bg-red-500'
+                            displayLead.score >= 70 ? 'bg-green-500' : displayLead.score >= 40 ? 'bg-yellow-500' : 'bg-red-500'
                           }`}
-                          style={{ width: `${lead.score || 0}%` }}
+                          style={{ width: `${displayLead.score || 0}%` }}
                         />
                       </div>
                       <p className="text-xs text-graphite/60 mt-2">
-                        {lead.score >= 70 ? '🔥 Hot Lead' : lead.score >= 40 ? '⚡ Warm Lead' : '❄️ Cold Lead'}
+                        {displayLead.score >= 70 ? '🔥 Hot Lead' : displayLead.score >= 40 ? '⚡ Warm Lead' : '❄️ Cold Lead'}
                       </p>
                     </div>
 
@@ -364,7 +415,7 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
                         <TrendingUp size={18} className="text-green-600" />
                         Estimated Value
                       </h3>
-                      <p className="text-3xl font-bold text-green-600">£{lead.value || lead.estimatedValue || 0}</p>
+                      <p className="text-3xl font-bold text-green-600">£{displayLead.value || displayLead.estimatedValue || 0}</p>
                     </div>
 
                     {/* Status */}
@@ -372,7 +423,7 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
                       <label className="font-semibold text-graphite mb-2 block">Lifecycle Stage</label>
                       {isEditing ? (
                         <select
-                          value={editedLead.lifecycle_stage || lead.lifecycle_stage}
+                          value={editedLead.lifecycle_stage || displayLead.lifecycle_stage}
                           onChange={(e) => setEditedLead({ ...editedLead, lifecycle_stage: e.target.value })}
                           className="w-full px-3 py-2 border border-mist rounded-lg focus:outline-none focus:ring-2 focus:ring-sage/20"
                         >
@@ -384,12 +435,12 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
                         </select>
                       ) : (
                         <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                          lead.lifecycle_stage === 'converted' ? 'bg-green-100 text-green-700' :
-                          lead.lifecycle_stage === 'qualified' ? 'bg-purple-100 text-purple-700' :
-                          lead.lifecycle_stage === 'contacted' ? 'bg-yellow-100 text-yellow-700' :
+                          displayLead.lifecycle_stage === 'converted' ? 'bg-green-100 text-green-700' :
+                          displayLead.lifecycle_stage === 'qualified' ? 'bg-purple-100 text-purple-700' :
+                          displayLead.lifecycle_stage === 'contacted' ? 'bg-yellow-100 text-yellow-700' :
                           'bg-blue-100 text-blue-700'
                         }`}>
-                          {lead.lifecycle_stage?.charAt(0).toUpperCase() + lead.lifecycle_stage?.slice(1)}
+                          {displayLead.lifecycle_stage?.charAt(0).toUpperCase() + displayLead.lifecycle_stage?.slice(1)}
                         </span>
                       )}
                     </div>
@@ -397,7 +448,7 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
                     {/* Source */}
                     <div className="bg-white border-2 border-mist rounded-xl p-4">
                       <label className="font-semibold text-graphite mb-2 block">Lead Source</label>
-                      <p className="text-graphite/70">{lead.source}</p>
+                      <p className="text-graphite/70">{displayLead.source}</p>
                     </div>
 
                     {/* Quick Actions */}

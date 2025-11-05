@@ -202,3 +202,6 @@ export default function CalendarView({ bookings, onBookingClick, onDateClick }: 
 
 
 
+
+
+

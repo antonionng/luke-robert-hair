@@ -89,13 +89,14 @@ export default function CPDCourseCard({ course }: CPDCourseCardProps) {
               className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
             />
 
-            {/* Modal Content */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="fixed inset-4 md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-3xl bg-white rounded-3xl shadow-2xl z-50 overflow-hidden"
-            >
+            {/* Modal Container */}
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="w-full max-w-3xl max-h-[90vh] bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col"
+              >
               {/* Modal Header */}
               <div className="bg-sage/5 px-8 py-6 border-b border-sage/10 relative">
                 <button
@@ -131,7 +132,7 @@ export default function CPDCourseCard({ course }: CPDCourseCardProps) {
               </div>
 
               {/* Modal Body */}
-              <div className="px-8 py-6 max-h-[60vh] overflow-y-auto">
+              <div className="px-8 py-6 overflow-y-auto flex-1 min-h-0">
                 {/* Full Description */}
                 <div className="mb-6">
                   <h3 className="text-lg font-semibold text-graphite mb-3">Overview</h3>
@@ -189,7 +190,8 @@ export default function CPDCourseCard({ course }: CPDCourseCardProps) {
                   Enquire About This Course
                 </a>
               </div>
-            </motion.div>
+              </motion.div>
+            </div>
           </>
         )}
       </AnimatePresence>

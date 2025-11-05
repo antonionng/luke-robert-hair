@@ -18,12 +18,12 @@ export const dummyBookings = [
     clientName: 'Emma Thompson',
     email: 'emma.t@email.com',
     phone: '07700 900456',
-    service: 'Colour & Cut',
+    service: 'Restyle & Styling',
     date: '2025-10-15',
     time: '14:00',
     status: 'pending' as const,
-    price: 150,
-    notes: 'First time client, wants balayage'
+    price: 95,
+    notes: 'First time client, wants a complete restyle'
   },
   {
     id: 'BK003',
@@ -65,12 +65,12 @@ export const dummyBookings = [
     clientName: 'Sophie Anderson',
     email: 'sophie.a@email.com',
     phone: '07700 900987',
-    service: 'Colour',
+    service: 'Styling Session',
     date: '2025-10-12',
     time: '13:00',
     status: 'completed' as const,
-    price: 95,
-    notes: 'Root touch-up'
+    price: 45,
+    notes: 'Special event styling'
   },
   {
     id: 'BK007',

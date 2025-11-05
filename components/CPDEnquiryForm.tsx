@@ -60,6 +60,16 @@ export default function CPDEnquiryForm() {
         throw new Error(data.error || 'Failed to submit enquiry');
       }
 
+      console.log('✅ CPD Enquiry Submitted Successfully:', {
+        leadId: data.leadId,
+        email: formData.email,
+        institution: formData.institution,
+        courseInterest: formData.courseInterest,
+        studentNumbers: formData.studentNumbers,
+        deliveryPreference: formData.deliveryPreference,
+        response: data
+      });
+
       setIsSuccess(true);
 
       // Reset form after 5 seconds
@@ -78,6 +88,15 @@ export default function CPDEnquiryForm() {
         setIsSuccess(false);
       }, 5000);
     } catch (err: any) {
+      console.error('❌ CPD Enquiry Submission Failed:', {
+        error: err.message,
+        formData: {
+          email: formData.email,
+          institution: formData.institution,
+          courseInterest: formData.courseInterest,
+        },
+        stack: err.stack
+      });
       setError(err.message || 'Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);

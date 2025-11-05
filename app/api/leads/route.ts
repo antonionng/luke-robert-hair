@@ -6,6 +6,16 @@ import { logActivityAndScore } from '@/lib/leadScoring';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    console.log('📥 [LEADS API] Received lead submission:', {
+      leadType: body.leadType,
+      email: body.email,
+      source: body.source,
+      hasInstitution: !!body.institution,
+      hasJobTitle: !!body.jobTitle,
+      hasStudentNumbers: !!body.studentNumbers,
+      hasDeliveryPreference: !!body.deliveryPreference
+    });
+    
     const { 
       leadType, 
       firstName, 
@@ -24,6 +34,7 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!firstName || !lastName || !email) {
+      console.error('❌ [LEADS API] Missing required fields:', { firstName: !!firstName, lastName: !!lastName, email: !!email });
       return NextResponse.json(
         { error: 'Missing required fields: firstName, lastName, email' },
         { status: 400 }
@@ -32,6 +43,7 @@ export async function POST(request: NextRequest) {
 
     // Additional validation for CPD leads
     if (leadType === 'cpd_partnership' && !institution) {
+      console.error('❌ [LEADS API] CPD lead missing institution');
       return NextResponse.json(
         { error: 'Institution name is required for CPD partnership enquiries' },
         { status: 400 }
@@ -42,17 +54,50 @@ export async function POST(request: NextRequest) {
     const { data: existingLead } = await db.getLeadByEmail(email);
     
     if (existingLead) {
-      // Update existing lead
+      console.log('⚠️ [LEADS API] Existing lead found, updating with new data');
+      
+      // Merge existing custom fields with new ones (new data takes priority)
+      const existingCustomFields = (existingLead.custom_fields as any) || {};
+      const updatedCustomFields: Record<string, any> = { ...existingCustomFields };
+      
+      // Update with CPD-specific fields if this is a CPD submission
+      if (leadType === 'cpd_partnership') {
+        updatedCustomFields.leadType = 'cpd_partnership';
+        updatedCustomFields.institution = institution;
+        if (jobTitle) updatedCustomFields.jobTitle = jobTitle;
+        if (studentNumbers) updatedCustomFields.studentNumbers = studentNumbers;
+        if (deliveryPreference) updatedCustomFields.deliveryPreference = deliveryPreference;
+        
+        console.log('🏫 [LEADS API] Updating existing lead with CPD data:', {
+          leadId: existingLead.id,
+          newCustomFields: updatedCustomFields
+        });
+      } else if (leadType === 'salon_client') {
+        updatedCustomFields.leadType = 'salon_client';
+      }
+      
+      // Update existing lead with new data
       await db.updateLead(existingLead.id, {
+        first_name: firstName,
+        last_name: lastName,
+        phone: phone || existingLead.phone,
         course_interest: courseInterest || existingLead.course_interest,
         message: message || existingLead.message,
+        source: source || (leadType === 'cpd_partnership' ? 'cpd_partnership' : existingLead.source),
+        custom_fields: updatedCustomFields,
         notes: message ? `${existingLead.notes || ''}\n\n[${new Date().toISOString()}] ${message}` : existingLead.notes,
       });
 
       // Log activity
       await logActivityAndScore(existingLead.id, 'form_submitted', {
-        form: 'education_enquiry',
+        form: leadType === 'cpd_partnership' ? 'cpd_enquiry' : 'education_enquiry',
         courseInterest,
+      });
+
+      console.log('✅ [LEADS API] Existing lead updated successfully:', {
+        leadId: existingLead.id,
+        leadType: updatedCustomFields.leadType,
+        source: source || (leadType === 'cpd_partnership' ? 'cpd_partnership' : existingLead.source)
       });
 
       return NextResponse.json({ 
@@ -72,12 +117,23 @@ export async function POST(request: NextRequest) {
       if (jobTitle) customFields.jobTitle = jobTitle;
       if (studentNumbers) customFields.studentNumbers = studentNumbers;
       if (deliveryPreference) customFields.deliveryPreference = deliveryPreference;
+      
+      console.log('🏫 [LEADS API] Preparing CPD lead with custom fields:', {
+        leadType: customFields.leadType,
+        institution: customFields.institution,
+        jobTitle: customFields.jobTitle,
+        studentNumbers: customFields.studentNumbers,
+        deliveryPreference: customFields.deliveryPreference
+      });
     } else if (leadType === 'salon_client') {
       customFields.leadType = 'salon_client';
+      console.log('🏪 [LEADS API] Preparing Salon lead');
+    } else {
+      console.log('🎓 [LEADS API] Preparing Education lead');
     }
 
     // Create new lead
-    const { data: newLead, error: createError } = await db.createLead({
+    const leadData = {
       first_name: firstName,
       last_name: lastName,
       email,
@@ -85,10 +141,19 @@ export async function POST(request: NextRequest) {
       course_interest: courseInterest || null,
       message: message || null,
       source: source || (leadType === 'cpd_partnership' ? 'cpd_partnership' : 'website'),
-      lifecycle_stage: 'new',
+      lifecycle_stage: 'new' as const,
       lead_score: 0,
       custom_fields: customFields,
+    };
+    
+    console.log('💾 [LEADS API] Creating lead in database:', {
+      email: leadData.email,
+      source: leadData.source,
+      leadType: customFields.leadType,
+      hasInstitution: !!customFields.institution
     });
+    
+    const { data: newLead, error: createError } = await db.createLead(leadData);
 
     if (createError || !newLead) {
       console.error('Lead creation error:', createError);
@@ -121,7 +186,10 @@ export async function POST(request: NextRequest) {
       leadId: newLead.id,
       name: `${firstName} ${lastName}`,
       email,
+      leadType: leadType,
       course: courseInterest,
+      institution: institution,
+      customFields: customFields,
       score: newLead.lead_score,
     });
 

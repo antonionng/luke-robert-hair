@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -7,9 +8,44 @@ import { ArrowRight, Scissors, GraduationCap, BookOpen, Award, Users, MapPin } f
 import ServiceCard from '@/components/ServiceCard';
 import TestimonialCard from '@/components/TestimonialCard';
 import InsightCard from '@/components/InsightCard';
-import { services, testimonials, featuredInsights } from '@/lib/data';
+import { services, testimonials } from '@/lib/data';
+
+interface InsightPost {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  category: string;
+  image_url: string;
+  published_at: string;
+  reading_time_minutes?: number;
+  featured?: boolean;
+  pinned_until?: string;
+}
 
 export default function Home() {
+  const [featuredInsights, setFeaturedInsights] = useState<InsightPost[]>([]);
+  const [insightsLoading, setInsightsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchFeaturedInsights();
+  }, []);
+
+  const fetchFeaturedInsights = async () => {
+    try {
+      const response = await fetch('/api/posts');
+      if (response.ok) {
+        const data = await response.json();
+        // Get the latest 3 published posts
+        const latestPosts = (data.posts || []).slice(0, 3);
+        setFeaturedInsights(latestPosts);
+      }
+    } catch (error) {
+      console.error('Failed to fetch insights:', error);
+    } finally {
+      setInsightsLoading(false);
+    }
+  };
   return (
     <div className="pt-20">
       {/* Hero Section */}
@@ -222,31 +258,46 @@ export default function Home() {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-            {featuredInsights.map((insight, index) => (
-              <InsightCard
-                key={insight.id}
-                id={insight.id}
-                title={insight.title}
-                excerpt={insight.excerpt}
-                category={insight.category}
-                readTime={insight.readTime}
-                imageUrl={insight.imageUrl}
-                index={index}
-              />
-            ))}
-          </div>
+          {insightsLoading ? (
+            <div className="text-center py-12">
+              <div className="inline-block w-12 h-12 border-4 border-sage/30 border-t-sage rounded-full animate-spin" />
+              <p className="mt-4 text-graphite/60">Loading insights...</p>
+            </div>
+          ) : featuredInsights.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-graphite/60">Check back soon for fresh insights!</p>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                {featuredInsights.map((insight, index) => (
+                  <InsightCard
+                    key={insight.id}
+                    id={insight.slug}
+                    title={insight.title}
+                    excerpt={insight.excerpt}
+                    category={insight.category}
+                    readTime={insight.reading_time_minutes ? `${insight.reading_time_minutes} min read` : '5 min read'}
+                    imageUrl={insight.image_url || `https://picsum.photos/seed/${insight.slug}/800/600`}
+                    index={index}
+                    featured={insight.featured}
+                    pinnedUntil={insight.pinned_until}
+                  />
+                ))}
+              </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center"
-          >
-            <Link href="/insights" className="inline-flex items-center gap-2 text-sage font-medium hover:gap-4 transition-all text-lg">
-              View All Insights <ArrowRight size={20} />
-            </Link>
-          </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="text-center"
+              >
+                <Link href="/insights" className="inline-flex items-center gap-2 text-sage font-medium hover:gap-4 transition-all text-lg">
+                  View All Insights <ArrowRight size={20} />
+                </Link>
+              </motion.div>
+            </>
+          )}
         </div>
       </section>
 

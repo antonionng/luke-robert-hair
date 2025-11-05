@@ -4,13 +4,14 @@ import { motion } from 'framer-motion';
 import { 
   LayoutDashboard, Calendar, Users, GraduationCap, Building2, 
   MessageSquare, Settings, LogOut, ChevronLeft, ChevronRight,
-  TrendingUp, FileText
+  TrendingUp, FileText, Sparkles
 } from 'lucide-react';
 import { useState } from 'react';
 
 interface AdminSidebarProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
+  onLogout?: () => void;
   stats?: {
     activeLeads: number;
     pendingBookings: number;
@@ -19,7 +20,7 @@ interface AdminSidebarProps {
   };
 }
 
-export default function AdminSidebar({ activeTab, onTabChange, stats }: AdminSidebarProps) {
+export default function AdminSidebar({ activeTab, onTabChange, onLogout, stats }: AdminSidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const navItems = [
@@ -28,6 +29,7 @@ export default function AdminSidebar({ activeTab, onTabChange, stats }: AdminSid
     { id: 'leads', label: 'Stylist Training', icon: GraduationCap, count: stats?.activeLeads },
     { id: 'cpd', label: 'College Partnerships', icon: Building2, count: stats?.cpdPartnerships },
     { id: 'chat', label: 'Chat Sessions', icon: MessageSquare, count: stats?.chatSessions },
+    { id: 'content', label: 'Content Engine', icon: Sparkles, count: null },
     { id: 'services', label: 'Services', icon: Settings, count: null },
   ];
 
@@ -123,12 +125,12 @@ export default function AdminSidebar({ activeTab, onTabChange, stats }: AdminSid
         )}
         
         <button
-          onClick={() => window.location.href = '/'}
+          onClick={onLogout || (() => window.location.href = '/')}
           className={`admin-sidebar-item w-full ${isCollapsed ? 'justify-center' : ''}`}
-          title={isCollapsed ? 'Exit Admin' : undefined}
+          title={isCollapsed ? 'Logout' : undefined}
         >
           <LogOut size={18} />
-          {!isCollapsed && <span>Exit Admin</span>}
+          {!isCollapsed && <span>Logout</span>}
         </button>
       </div>
     </motion.aside>

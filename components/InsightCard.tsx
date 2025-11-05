@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, Clock } from 'lucide-react';
+import { ArrowRight, Clock, Star, Pin } from 'lucide-react';
 
 interface InsightCardProps {
   id: string;
@@ -13,6 +13,8 @@ interface InsightCardProps {
   readTime: string;
   imageUrl: string;
   index: number;
+  featured?: boolean;
+  pinnedUntil?: string;
 }
 
 export default function InsightCard({ 
@@ -22,8 +24,12 @@ export default function InsightCard({
   category, 
   readTime, 
   imageUrl, 
-  index 
+  index,
+  featured,
+  pinnedUntil
 }: InsightCardProps) {
+  // Check if post is currently pinned
+  const isPinned = pinnedUntil && new Date(pinnedUntil) > new Date();
   return (
     <motion.article
       initial={{ opacity: 0, y: 20 }}
@@ -41,10 +47,22 @@ export default function InsightCard({
             className="object-cover group-hover:scale-105 transition-transform duration-300"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
-          <div className="absolute top-4 left-4">
+          <div className="absolute top-4 left-4 flex gap-2">
             <span className="px-3 py-1 bg-sage text-white text-xs font-medium rounded-full">
               {category}
             </span>
+            {featured && (
+              <span className="px-3 py-1 bg-amber-500 text-white text-xs font-medium rounded-full flex items-center gap-1">
+                <Star size={12} fill="currentColor" />
+                Featured
+              </span>
+            )}
+            {isPinned && (
+              <span className="px-3 py-1 bg-blue-500 text-white text-xs font-medium rounded-full flex items-center gap-1">
+                <Pin size={12} />
+                Pinned
+              </span>
+            )}
           </div>
         </div>
         

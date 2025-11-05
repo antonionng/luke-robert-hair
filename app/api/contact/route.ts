@@ -1,38 +1,103 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { supabase } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
   try {
     const { name, email, phone, type, message } = await request.json();
 
-    // Create contact in database
-    const contact = await db.createContact({
+    console.log('📥 [CONTACT API] Received contact form submission:', {
       name,
       email,
       phone,
       type,
+      message: message?.substring(0, 50) + '...'
     });
 
-    // In production, send email notification using Resend
-    // await sendContactNotification({ name, email, phone, type, message });
+    // Parse name into first and last name
+    const nameParts = name.trim().split(' ');
+    const firstName = nameParts[0] || name;
+    const lastName = nameParts.slice(1).join(' ') || firstName;
 
-    console.log('Contact form submission:', {
-      contactId: contact.id,
-      name,
-      email,
-      type,
-      message,
+    // Determine lead type and source based on enquiry type
+    let leadType = 'education'; // default
+    let source = 'contact_form_general';
+    let courseInterest = 'General Enquiry';
+
+    if (type === 'education') {
+      leadType = 'education';
+      source = 'contact_form_education';
+      courseInterest = message || 'Education Enquiry';
+    } else if (type === 'client') {
+      leadType = 'salon_referral';
+      source = 'contact_form_salon';
+      courseInterest = 'Salon Booking Enquiry';
+    }
+
+    // Create lead in Supabase
+    const leadData: any = {
+      first_name: firstName,
+      last_name: lastName,
+      email: email.toLowerCase().trim(),
+      phone: phone || null,
+      source,
+      lead_score: 50, // Default score for contact form submissions
+      lifecycle_stage: 'new',
+      course_interest: courseInterest,
+      notes: message || null,
+      custom_fields: {
+        leadType,
+        enquiryType: type,
+        message,
+        submittedVia: 'contact_form',
+      },
+    };
+
+    console.log('💾 [CONTACT API] Creating lead in Supabase:', {
+      email: leadData.email,
+      source: leadData.source,
+      leadType,
+      type
+    });
+
+    const { data: newLead, error: createError } = await supabase
+      .from('leads')
+      .insert([leadData])
+      .select()
+      .single();
+
+    if (createError) {
+      console.error('❌ [CONTACT API] Failed to create lead:', createError);
+      throw createError;
+    }
+
+    console.log('✅ [CONTACT API] Lead created successfully:', {
+      leadId: newLead.id,
+      email: newLead.email,
+      source: newLead.source,
+      leadType
+    });
+
+    // Log activity
+    await supabase.from('lead_activities').insert({
+      lead_id: newLead.id,
+      activity_type: 'form_submitted',
+      activity_data: {
+        form_type: 'contact_form',
+        enquiry_type: type,
+        message: message?.substring(0, 100),
+      },
+      automated: false,
     });
 
     return NextResponse.json({ 
       success: true, 
       message: 'Contact form submitted successfully',
-      contactId: contact.id,
+      leadId: newLead.id,
     });
-  } catch (error) {
-    console.error('Contact API error:', error);
+  } catch (error: any) {
+    console.error('❌ [CONTACT API] Error:', error);
     return NextResponse.json(
-      { error: 'Failed to process contact form' },
+      { error: 'Failed to process contact form', details: error.message },
       { status: 500 }
     );
   }

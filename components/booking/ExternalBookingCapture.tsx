@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ExternalLink, Calendar, Clock, MapPin, Phone } from 'lucide-react';
+import TimeSelector from '@/components/TimeSelector';
 
 interface Location {
   id: string;
@@ -291,12 +292,11 @@ export default function ExternalBookingCapture({ location, onBack }: ExternalBoo
                       </div>
                       <div>
                         <label className="block font-medium mb-2">Preferred Time</label>
-                        <input
-                          type="time"
-                          name="preferredTime"
+                        <TimeSelector
                           value={formData.preferredTime}
-                          onChange={handleChange}
+                          onChange={(time) => setFormData({ ...formData, preferredTime: time })}
                           className="w-full px-4 py-3 border border-mist rounded-xl focus:outline-none focus:ring-2 focus:ring-sage/20"
+                          placeholder="Select preferred time"
                         />
                       </div>
                     </div>

@@ -152,11 +152,19 @@ export async function POST(request: NextRequest) {
     redirectUrl.searchParams.append('email', email);
     if (phone) redirectUrl.searchParams.append('phone', phone);
 
-    console.log('✅ Referral captured:', {
+    console.log('✅ Referral captured (SERVER):', {
       leadId,
       salon: salonInfo.name,
       name: `${firstName} ${lastName}`,
       email,
+      leadType: 'salon_referral',
+      source: `salon_referral_${salonId.replace('-', '_')}`,
+      customFields: {
+        leadType: 'salon_referral',
+        referralSalon: salonInfo.name,
+        preferredDate: preferredDate || null,
+        serviceInterest: serviceInterest || null,
+      }
     });
 
     // Send confirmation email

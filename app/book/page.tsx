@@ -13,6 +13,7 @@ interface Location {
   city: string;
   bookingSystem: 'ours' | 'theirs';
   externalUrl?: string;
+  isPartner?: boolean;
 }
 
 export default function BookPage() {
@@ -76,29 +77,29 @@ export default function BookPage() {
                     <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-sage/10 to-transparent rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
                     
                     <div className="relative z-10">
-                      {location.bookingSystem === 'theirs' && (
+                      {location.isPartner && (
                         <div className="inline-block px-3 py-1 bg-gradient-to-r from-blue-100 to-blue-50 text-blue-700 text-xs font-semibold rounded-full mb-4 border border-blue-200">
                           Partner Salon
                         </div>
                       )}
                       
-                      <h3 className="text-2xl font-playfair font-light mb-2 text-graphite">
-                        {location.displayName || location.name}
+                      <h3 className="text-3xl font-playfair font-light mb-6 text-graphite leading-tight">
+                        Book me at {location.displayName || location.name}
                       </h3>
                       
-                      <div className="flex items-center gap-2 mb-6">
+                      <div className="flex items-center gap-2 mb-4">
                         <div className="w-2 h-2 bg-sage rounded-full"></div>
                         <p className="text-sm font-medium text-sage uppercase tracking-wide">{location.city}</p>
                       </div>
                       
-                      <p className="text-sm text-graphite/60 mb-6 leading-relaxed">{location.address}</p>
+                      <p className="text-sm text-graphite/60 mb-4 leading-relaxed">{location.address}</p>
                       
                       {location.phone && (
                         <p className="text-sm text-graphite/50 mb-6">{location.phone}</p>
                       )}
                       
                       <button className="w-full bg-gradient-to-r from-sage to-sage-dark text-white py-4 rounded-full font-medium hover:shadow-xl transition-all duration-300 transform group-hover:scale-105">
-                        Book me at {location.displayName || location.name}
+                        Continue
                       </button>
                     </div>
                   </div>

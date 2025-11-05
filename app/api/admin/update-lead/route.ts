@@ -11,6 +11,12 @@ export async function PATCH(request: Request) {
     const body = await request.json();
     const { leadId, updates } = body;
 
+    console.log('📝 [UPDATE LEAD API] Received update request:', {
+      leadId,
+      fields: Object.keys(updates),
+      hasNotes: updates.notes !== undefined,
+    });
+
     if (!leadId) {
       return NextResponse.json({ error: 'Lead ID required' }, { status: 400 });
     }
@@ -64,6 +70,12 @@ export async function PATCH(request: Request) {
     if (error) {
       throw error;
     }
+
+    console.log('✅ [UPDATE LEAD API] Lead updated successfully:', {
+      leadId,
+      updatedFields: Object.keys(dbUpdates),
+      notes: data?.notes ? `${data.notes.substring(0, 50)}...` : 'No notes',
+    });
 
     // Log the update activity
     await supabase.from('lead_activities').insert({

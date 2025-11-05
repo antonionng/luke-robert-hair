@@ -216,6 +216,7 @@ export default function CourseDetailsModal({ course, isOpen, onClose, onEnquire 
         <>
           {/* Backdrop */}
           <motion.div
+            key="backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -224,14 +225,15 @@ export default function CourseDetailsModal({ course, isOpen, onClose, onEnquire 
           />
 
           {/* Modal */}
-          <div className="fixed inset-0 z-50 overflow-y-auto">
+          <motion.div
+            key="modal"
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            className="fixed inset-0 z-50 overflow-y-auto"
+          >
             <div className="min-h-full flex items-center justify-center p-4">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
-              >
+              <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
                 {/* Header */}
                 <div className="bg-sage text-white p-8 relative">
                   <button
@@ -353,9 +355,9 @@ export default function CourseDetailsModal({ course, isOpen, onClose, onEnquire 
                     </button>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             </div>
-          </div>
+          </motion.div>
         </>
       )}
     </AnimatePresence>

@@ -135,7 +135,15 @@ export function formatDate(date: Date): string {
 
 // Format time for display
 export function formatTime(time: string): string {
-  const [hour, min] = time.split(':').map(Number);
+  if (!time) return '';
+  const parts = time.split(':');
+  if (parts.length < 2) return time;
+  
+  const hour = parseInt(parts[0], 10);
+  const min = parseInt(parts[1], 10);
+  
+  if (isNaN(hour) || isNaN(min)) return time;
+  
   const period = hour >= 12 ? 'PM' : 'AM';
   const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
   return `${displayHour}:${min.toString().padStart(2, '0')} ${period}`;

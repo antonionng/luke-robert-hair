@@ -299,26 +299,124 @@ export interface Database {
           profile_score?: number;
         };
       };
+      content_requests: {
+        Row: {
+          id: string;
+          created_at: string;
+          updated_at: string;
+          requested_by: string | null;
+          request_source: 'manual' | 'ai_assist' | 'automation';
+          request_type: 'blog_post' | 'campaign' | 'announcement' | 'evergreen';
+          status: 'draft' | 'queued' | 'generating' | 'ready' | 'completed' | 'cancelled';
+          title: string | null;
+          topic: string;
+          category: string | null;
+          summary: string | null;
+          brief: string | null;
+          audience: string | null;
+          tone: string | null;
+          objectives: string | null;
+          target_keywords: string[];
+          inspiration_links: string[];
+          notes: string | null;
+          preferred_publish_date: string | null;
+          scheduled_for: string | null;
+          auto_publish: boolean;
+          priority: number;
+          ai_context: Json;
+          metadata: Json;
+        };
+        Insert: {
+          id?: string;
+          created_at?: string;
+          updated_at?: string;
+          requested_by?: string | null;
+          request_source?: 'manual' | 'ai_assist' | 'automation';
+          request_type?: 'blog_post' | 'campaign' | 'announcement' | 'evergreen';
+          status?: 'draft' | 'queued' | 'generating' | 'ready' | 'completed' | 'cancelled';
+          title?: string | null;
+          topic: string;
+          category?: string | null;
+          summary?: string | null;
+          brief?: string | null;
+          audience?: string | null;
+          tone?: string | null;
+          objectives?: string | null;
+          target_keywords?: string[];
+          inspiration_links?: string[];
+          notes?: string | null;
+          preferred_publish_date?: string | null;
+          scheduled_for?: string | null;
+          auto_publish?: boolean;
+          priority?: number;
+          ai_context?: Json;
+          metadata?: Json;
+        };
+        Update: {
+          requested_by?: string | null;
+          request_source?: 'manual' | 'ai_assist' | 'automation';
+          request_type?: 'blog_post' | 'campaign' | 'announcement' | 'evergreen';
+          status?: 'draft' | 'queued' | 'generating' | 'ready' | 'completed' | 'cancelled';
+          title?: string | null;
+          topic?: string;
+          category?: string | null;
+          summary?: string | null;
+          brief?: string | null;
+          audience?: string | null;
+          tone?: string | null;
+          objectives?: string | null;
+          target_keywords?: string[];
+          inspiration_links?: string[];
+          notes?: string | null;
+          preferred_publish_date?: string | null;
+          scheduled_for?: string | null;
+          auto_publish?: boolean;
+          priority?: number;
+          ai_context?: Json;
+          metadata?: Json;
+        };
+      };
       content_queue: {
         Row: {
           id: string;
           created_at: string;
           updated_at: string;
+          request_id: string | null;
           title: string;
           slug: string | null;
           excerpt: string | null;
           content: string;
-          category: 'Salon Tips' | 'Education Insights' | 'Product Highlights';
+          category: string;
           image_url: string | null;
           image_prompt: string | null;
-          status: 'queued' | 'generating' | 'review' | 'scheduled' | 'published' | 'rejected';
+          hero_alt: string | null;
+          hero_caption: string | null;
+          status: 'draft' | 'queued' | 'generating' | 'review' | 'scheduled' | 'published' | 'rejected' | 'archived';
+          source: 'automation' | 'manual' | 'ai_assist' | 'repurposed';
           scheduled_for: string | null;
           published_at: string | null;
+          pinned_until: string | null;
+          featured: boolean;
           ai_generated: boolean;
           ai_model: string | null;
           generation_prompt: string | null;
+          outline: Json;
+          editor_state: Json;
+          metadata: Json;
+          seo_title: string | null;
           meta_description: string | null;
           keywords: string[] | null;
+          insight_tags: string[];
+          cta_label: string | null;
+          cta_url: string | null;
+          cta_description: string | null;
+          preview_html: string | null;
+          preview_generated_at: string | null;
+          last_previewed_at: string | null;
+          last_previewed_by: string | null;
+          editor_notes: string | null;
+          word_count: number;
+          reading_time_minutes: number | null;
           views: number;
           clicks: number;
           leads_generated: number;
@@ -330,21 +428,42 @@ export interface Database {
           id?: string;
           created_at?: string;
           updated_at?: string;
+          request_id?: string | null;
           title: string;
           slug?: string | null;
           excerpt?: string | null;
           content: string;
-          category: 'Salon Tips' | 'Education Insights' | 'Product Highlights';
+          category: string;
           image_url?: string | null;
           image_prompt?: string | null;
-          status?: 'queued' | 'generating' | 'review' | 'scheduled' | 'published' | 'rejected';
+          hero_alt?: string | null;
+          hero_caption?: string | null;
+          status?: 'draft' | 'queued' | 'generating' | 'review' | 'scheduled' | 'published' | 'rejected' | 'archived';
+          source?: 'automation' | 'manual' | 'ai_assist' | 'repurposed';
           scheduled_for?: string | null;
           published_at?: string | null;
+          pinned_until?: string | null;
+          featured?: boolean;
           ai_generated?: boolean;
           ai_model?: string | null;
           generation_prompt?: string | null;
+          outline?: Json;
+          editor_state?: Json;
+          metadata?: Json;
+          seo_title?: string | null;
           meta_description?: string | null;
           keywords?: string[] | null;
+          insight_tags?: string[];
+          cta_label?: string | null;
+          cta_url?: string | null;
+          cta_description?: string | null;
+          preview_html?: string | null;
+          preview_generated_at?: string | null;
+          last_previewed_at?: string | null;
+          last_previewed_by?: string | null;
+          editor_notes?: string | null;
+          word_count?: number;
+          reading_time_minutes?: number | null;
           views?: number;
           clicks?: number;
           leads_generated?: number;
@@ -353,24 +472,96 @@ export interface Database {
           rejection_reason?: string | null;
         };
         Update: {
+          request_id?: string | null;
           title?: string;
           slug?: string | null;
           excerpt?: string | null;
           content?: string;
-          category?: 'Salon Tips' | 'Education Insights' | 'Product Highlights';
+          category?: string;
           image_url?: string | null;
           image_prompt?: string | null;
-          status?: 'queued' | 'generating' | 'review' | 'scheduled' | 'published' | 'rejected';
+          hero_alt?: string | null;
+          hero_caption?: string | null;
+          status?: 'draft' | 'queued' | 'generating' | 'review' | 'scheduled' | 'published' | 'rejected' | 'archived';
+          source?: 'automation' | 'manual' | 'ai_assist' | 'repurposed';
           scheduled_for?: string | null;
           published_at?: string | null;
+          pinned_until?: string | null;
+          featured?: boolean;
+          ai_generated?: boolean;
+          ai_model?: string | null;
+          generation_prompt?: string | null;
+          outline?: Json;
+          editor_state?: Json;
+          metadata?: Json;
+          seo_title?: string | null;
           meta_description?: string | null;
           keywords?: string[] | null;
+          insight_tags?: string[];
+          cta_label?: string | null;
+          cta_url?: string | null;
+          cta_description?: string | null;
+          preview_html?: string | null;
+          preview_generated_at?: string | null;
+          last_previewed_at?: string | null;
+          last_previewed_by?: string | null;
+          editor_notes?: string | null;
+          word_count?: number;
+          reading_time_minutes?: number | null;
           views?: number;
           clicks?: number;
           leads_generated?: number;
           reviewed_by?: string | null;
           reviewed_at?: string | null;
           rejection_reason?: string | null;
+        };
+      };
+      content_analytics_events: {
+        Row: {
+          id: string;
+          created_at: string;
+          content_id: string;
+          session_id: string | null;
+          event_type: 'view' | 'click' | 'cta_click' | 'share' | 'impression';
+          event_value: number;
+          source: string | null;
+          medium: string | null;
+          campaign: string | null;
+          referrer: string | null;
+          user_agent: string | null;
+          device: string | null;
+          ip_address: string | null;
+          metadata: Json;
+        };
+        Insert: {
+          id?: string;
+          created_at?: string;
+          content_id: string;
+          session_id?: string | null;
+          event_type: 'view' | 'click' | 'cta_click' | 'share' | 'impression';
+          event_value?: number;
+          source?: string | null;
+          medium?: string | null;
+          campaign?: string | null;
+          referrer?: string | null;
+          user_agent?: string | null;
+          device?: string | null;
+          ip_address?: string | null;
+          metadata?: Json;
+        };
+        Update: {
+          content_id?: string;
+          session_id?: string | null;
+          event_type?: 'view' | 'click' | 'cta_click' | 'share' | 'impression';
+          event_value?: number;
+          source?: string | null;
+          medium?: string | null;
+          campaign?: string | null;
+          referrer?: string | null;
+          user_agent?: string | null;
+          device?: string | null;
+          ip_address?: string | null;
+          metadata?: Json;
         };
       };
       content_topics: {
@@ -870,9 +1061,55 @@ export const db = {
       .order('created_at', { ascending: false });
   },
 
+  // ===== CONTENT REQUEST OPERATIONS =====
+  async createContentRequest(request: Database['public']['Tables']['content_requests']['Insert']) {
+    return supabase.from('content_requests').insert(request).select().single();
+  },
+
+  async updateContentRequest(id: string, updates: Database['public']['Tables']['content_requests']['Update']) {
+    return supabase.from('content_requests').update(updates).eq('id', id).select().single();
+  },
+
+  async getContentRequest(id: string) {
+    return supabase.from('content_requests').select('*').eq('id', id).single();
+  },
+
+  async getContentRequests(params: {
+    status?: Database['public']['Tables']['content_requests']['Row']['status'];
+    requestSource?: Database['public']['Tables']['content_requests']['Row']['request_source'];
+    limit?: number;
+  } = {}) {
+    let query = supabase
+      .from('content_requests')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (params.status) {
+      query = query.eq('status', params.status);
+    }
+
+    if (params.requestSource) {
+      query = query.eq('request_source', params.requestSource);
+    }
+
+    if (params.limit) {
+      query = query.limit(params.limit);
+    }
+
+    return query;
+  },
+
   // ===== CONTENT QUEUE OPERATIONS =====
   async createContent(content: Database['public']['Tables']['content_queue']['Insert']) {
     return supabase.from('content_queue').insert(content).select().single();
+  },
+
+  async getContentById(id: string) {
+    return supabase.from('content_queue').select('*').eq('id', id).single();
+  },
+
+  async updateContent(id: string, updates: Database['public']['Tables']['content_queue']['Update']) {
+    return supabase.from('content_queue').update(updates).eq('id', id).select().single();
   },
 
   async getContentByStatus(status: Database['public']['Tables']['content_queue']['Row']['status']) {
@@ -880,11 +1117,19 @@ export const db = {
   },
 
   async getPublishedContent() {
+    // Fetch published content with smart filtering and sorting
+    // - Filter out scheduled posts that haven't reached their scheduled_for date
+    // - Sort by: pinned (non-expired) first, then featured, then by published_at
+    const now = new Date().toISOString();
+    
     return supabase
       .from('content_queue')
       .select('*')
       .eq('status', 'published')
+      .or(`scheduled_for.is.null,scheduled_for.lte.${now}`)
       .order('published_at', { ascending: false });
+    // Note: Complex sorting (pinned/featured priority) is handled in application layer
+    // because Supabase doesn't support CASE expressions in order() directly
   },
 
   async updateContentStatus(id: string, status: Database['public']['Tables']['content_queue']['Row']['status']) {
@@ -893,6 +1138,52 @@ export const db = {
 
   async getContentForReview() {
     return supabase.from('content_queue').select('*').eq('status', 'review').order('created_at', { ascending: false });
+  },
+
+  // ===== CONTENT ANALYTICS =====
+  async logContentAnalyticsEvent(event: Database['public']['Tables']['content_analytics_events']['Insert']) {
+    return supabase.from('content_analytics_events').insert(event).select().single();
+  },
+
+  async getContentAnalyticsEvents(
+    contentId: string,
+    options: {
+      start?: Date;
+      end?: Date;
+      eventTypes?: Database['public']['Tables']['content_analytics_events']['Row']['event_type'][];
+      limit?: number;
+    } = {}
+  ) {
+    let query = supabase
+      .from('content_analytics_events')
+      .select('*')
+      .eq('content_id', contentId)
+      .order('created_at', { ascending: false });
+
+    if (options.start) {
+      query = query.gte('created_at', options.start.toISOString());
+    }
+
+    if (options.end) {
+      query = query.lte('created_at', options.end.toISOString());
+    }
+
+    if (options.eventTypes && options.eventTypes.length > 0) {
+      query = query.in('event_type', options.eventTypes);
+    }
+
+    if (options.limit) {
+      query = query.limit(options.limit);
+    }
+
+    return query;
+  },
+
+  async getContentAnalyticsSummary(contentId: string) {
+    return supabase
+      .from('content_analytics_events')
+      .select('event_type, total:event_value.sum()', { group: 'event_type' })
+      .eq('content_id', contentId);
   },
 
   // ===== CONTENT TOPICS =====

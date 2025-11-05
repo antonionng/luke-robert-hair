@@ -74,11 +74,19 @@ async function runMigrations() {
     console.log('All migrations completed successfully');
   } catch (error) {
     // Rollback the transaction in case of error
-    await client.query('ROLLBACK');
+    try {
+      await client.query('ROLLBACK');
+    } catch (rollbackError) {
+      console.error('Failed to rollback transaction:', rollbackError);
+    }
     console.error('Migration failed:', error);
     process.exit(1);
   } finally {
-    await client.end();
+    try {
+      await client.end();
+    } catch (endError) {
+      console.error('Failed to close connection:', endError);
+    }
   }
 }
 

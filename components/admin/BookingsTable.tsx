@@ -8,9 +8,10 @@ interface BookingsTableProps {
   bookings: Booking[];
   searchTerm: string;
   onUpdate?: () => void;
+  onViewBooking?: (booking: Booking) => void;
 }
 
-export default function BookingsTable({ bookings, searchTerm }: BookingsTableProps) {
+export default function BookingsTable({ bookings, searchTerm, onViewBooking }: BookingsTableProps) {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'confirmed':
@@ -63,7 +64,8 @@ export default function BookingsTable({ bookings, searchTerm }: BookingsTablePro
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="admin-table-row border-b border-zinc-800"
+                onClick={() => onViewBooking?.(booking)}
+                className="admin-table-row border-b border-zinc-800 cursor-pointer hover:bg-zinc-800/50"
               >
                 <td className="admin-table-cell">
                   <div>
@@ -99,7 +101,7 @@ export default function BookingsTable({ bookings, searchTerm }: BookingsTablePro
                   <div className="flex items-center gap-2">
                     {getStatusIcon(booking.status)}
                     <span className={`admin-badge ${getStatusBadge(booking.status)}`}>
-                      {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                      {booking.status ? booking.status.charAt(0).toUpperCase() + booking.status.slice(1) : 'Pending'}
                     </span>
                   </div>
                 </td>
@@ -108,10 +110,24 @@ export default function BookingsTable({ bookings, searchTerm }: BookingsTablePro
                 </td>
                 <td className="admin-table-cell">
                   <div className="flex items-center gap-2">
-                    <button className="p-2 hover:bg-blue-500/20 rounded-lg transition-colors group" title="View Details">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onViewBooking?.(booking);
+                      }}
+                      className="p-2 hover:bg-blue-500/20 rounded-lg transition-colors group" 
+                      title="View Details"
+                    >
                       <Eye size={16} className="text-zinc-400 group-hover:text-blue-400" />
                     </button>
-                    <button className="p-2 hover:bg-blue-500/20 rounded-lg transition-colors group" title="Edit Booking">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onViewBooking?.(booking);
+                      }}
+                      className="p-2 hover:bg-blue-500/20 rounded-lg transition-colors group" 
+                      title="Edit Booking"
+                    >
                       <Edit size={16} className="text-zinc-400 group-hover:text-blue-400" />
                     </button>
                   </div>

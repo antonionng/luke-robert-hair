@@ -6,6 +6,7 @@ import {
   X, Calendar, Clock, MapPin, User, Mail, Phone, Edit2, Save,
   CheckCircle, XCircle, AlertCircle, MessageSquare
 } from 'lucide-react';
+import TimeSelector from '@/components/TimeSelector';
 
 interface BookingDetailModalProps {
   booking: any;
@@ -50,8 +51,6 @@ export default function BookingDetailModal({ booking, isOpen, onClose, onUpdate 
     }
   };
 
-  if (!booking) return null;
-
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'confirmed':
@@ -84,10 +83,11 @@ export default function BookingDetailModal({ booking, isOpen, onClose, onUpdate 
 
   return (
     <AnimatePresence>
-      {isOpen && (
+      {isOpen && booking && (
         <>
           {/* Backdrop */}
           <motion.div
+            key="backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -97,6 +97,7 @@ export default function BookingDetailModal({ booking, isOpen, onClose, onUpdate 
 
           {/* Modal */}
           <motion.div
+            key="modal"
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -113,7 +114,7 @@ export default function BookingDetailModal({ booking, isOpen, onClose, onUpdate 
                     {getStatusIcon(booking.status)}
                   </div>
                   <p className="text-sm text-white/80 mt-1">
-                    {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)} • 
+                    {booking.status ? booking.status.charAt(0).toUpperCase() + booking.status.slice(1) : 'Pending'} • 
                     {booking.date && ` ${new Date(booking.date).toLocaleDateString('en-GB')}`}
                     {booking.time && ` at ${booking.time}`}
                   </p>
@@ -210,11 +211,11 @@ export default function BookingDetailModal({ booking, isOpen, onClose, onUpdate 
                           <div>
                             <label className="text-sm text-zinc-400">Time</label>
                             {isEditing ? (
-                              <input
-                                type="time"
+                              <TimeSelector
                                 value={editedBooking.time}
-                                onChange={(e) => setEditedBooking({ ...editedBooking, time: e.target.value })}
-                                className="admin-input w-full px-3 py-2 mt-1"
+                                onChange={(time) => setEditedBooking({ ...editedBooking, time })}
+                                className="admin-select w-full px-3 py-2 mt-1"
+                                placeholder="Select time"
                               />
                             ) : (
                               <p className="text-white font-medium">{booking.time}</p>

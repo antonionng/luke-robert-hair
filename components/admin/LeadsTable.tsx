@@ -146,8 +146,8 @@ export default function LeadsTable({ leads, searchTerm, leadTypeFilter = 'all', 
                   )}
                 </td>
                 <td className="admin-table-cell">
-                  <span className={`admin-badge ${getStatusBadge(lead.status)}`}>
-                    {lead.status.charAt(0).toUpperCase() + lead.status.slice(1)}
+                  <span className={`admin-badge ${getStatusBadge(lead.status || 'new')}`}>
+                    {lead.status ? lead.status.charAt(0).toUpperCase() + lead.status.slice(1) : 'New'}
                   </span>
                 </td>
                 <td className="admin-table-cell">

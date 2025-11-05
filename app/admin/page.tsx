@@ -18,6 +18,12 @@ import CreateBookingModal from '@/components/admin/CreateBookingModal';
 import BookingDetailModal from '@/components/admin/BookingDetailModal';
 import CalendarView from '@/components/admin/CalendarView';
 import AdminEmptyState from '@/components/admin/AdminEmptyState';
+import ContentCreationModal from '@/components/admin/ContentCreationModal';
+import ContentQueueTable from '@/components/admin/ContentQueueTable';
+import ContentPreviewModal from '@/components/admin/ContentPreviewModal';
+import ContentSuccessModal from '@/components/admin/ContentSuccessModal';
+import ContentTopicSuggestions from '@/components/admin/ContentTopicSuggestions';
+import ContentAnalyticsDashboard from '@/components/admin/ContentAnalyticsDashboard';
 import { getAllBookings } from '@/lib/bookingStore';
 import { Booking as BookingType } from '@/lib/bookingTypes';
 
@@ -36,7 +42,15 @@ interface Stats {
 export default function AdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<'overview' | 'bookings' | 'leads' | 'cpd' | 'chat' | 'services'>('overview');
+  
+  // Check for existing auth session on mount
+  useEffect(() => {
+    const authSession = sessionStorage.getItem('admin_authenticated');
+    if (authSession === 'true') {
+      setIsAuthenticated(true);
+    }
+  }, []);
+  const [activeTab, setActiveTab] = useState<'overview' | 'bookings' | 'leads' | 'cpd' | 'chat' | 'services' | 'content'>('overview');
   const [searchTerm, setSearchTerm] = useState('');
   const [bookingView, setBookingView] = useState<'table' | 'calendar'>('table');
   
@@ -47,6 +61,14 @@ export default function AdminDashboard() {
   const [isCreateLeadModalOpen, setIsCreateLeadModalOpen] = useState(false);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [isCreateBookingModalOpen, setIsCreateBookingModalOpen] = useState(false);
+  const [isContentCreationModalOpen, setIsContentCreationModalOpen] = useState(false);
+  const [isContentPreviewModalOpen, setIsContentPreviewModalOpen] = useState(false);
+  const [isContentSuccessModalOpen, setIsContentSuccessModalOpen] = useState(false);
+  const [selectedContentId, setSelectedContentId] = useState<string | null>(null);
+  const [createdContentId, setCreatedContentId] = useState<string | null>(null);
+  const [createdContentTitle, setCreatedContentTitle] = useState<string>('');
+  const [contentQueue, setContentQueue] = useState<any[]>([]);
+  const [contentView, setContentView] = useState<'queue' | 'suggestions' | 'analytics'>('queue');
   
   // Data
   const [stats, setStats] = useState<Stats>({
@@ -108,21 +130,74 @@ export default function AdminDashboard() {
           setChatActivity(chatData);
         }
 
+        // Fetch content queue
+        const contentRes = await fetch('/api/admin/content/queue');
+        if (contentRes.ok) {
+          const contentData = await contentRes.json();
+          setContentQueue(contentData.content || []);
+        }
+
         // Fetch all leads
         const leadsRes = await fetch('/api/admin/leads');
         if (leadsRes.ok) {
           const leadsData = await leadsRes.json();
+          console.log('📥 [ADMIN] All leads fetched:', leadsData);
+          console.log(`📊 [ADMIN] Total leads count: ${leadsData.length}`);
           
-          // Separate into categories
-          const salonReferrals = leadsData.filter((l: any) => 
-            l.leadType === 'salon_referral' || l.source?.includes('salon_referral')
-          );
-          const educationLeads = leadsData.filter((l: any) => 
-            l.leadType === 'education' || (!l.leadType && !l.institution && !l.referralSalon)
-          );
-          const cpdLeads = leadsData.filter((l: any) => 
-            ['cpd', 'cpd_partnership'].includes(l.leadType || '') || l.institution
-          );
+          // Separate into categories with detailed logging
+          const salonReferrals = leadsData.filter((l: any) => {
+            const isSalon = 
+              l.leadType === 'salon_referral' || 
+              l.source?.includes('salon_referral') ||
+              l.source === 'contact_form_salon' ||
+              l.source === 'external_booking_intent';
+            if (isSalon) {
+              console.log('🏪 [ADMIN] Salon Referral detected:', {
+                email: l.email,
+                leadType: l.leadType,
+                source: l.source,
+                referralSalon: l.referralSalon
+              });
+            }
+            return isSalon;
+          });
+          
+          const educationLeads = leadsData.filter((l: any) => {
+            const isEducation = (
+              l.leadType === 'education' || 
+              (l.source === 'contact_form_education') ||
+              (!l.leadType && !l.institution && !l.referralSalon && l.source !== 'external_booking_intent')
+            );
+            if (isEducation) {
+              console.log('🎓 [ADMIN] Education Lead detected:', {
+                email: l.email,
+                leadType: l.leadType,
+                course: l.course
+              });
+            }
+            return isEducation;
+          });
+          
+          const cpdLeads = leadsData.filter((l: any) => {
+            const isCPD = ['cpd', 'cpd_partnership'].includes(l.leadType || '') || l.institution;
+            if (isCPD) {
+              console.log('🏫 [ADMIN] CPD Lead detected:', {
+                email: l.email,
+                leadType: l.leadType,
+                institution: l.institution,
+                source: l.source
+              });
+            }
+            return isCPD;
+          });
+          
+          console.log('📊 [ADMIN] Categorization Complete:', {
+            total: leadsData.length,
+            salonReferrals: salonReferrals.length,
+            educationLeads: educationLeads.length,
+            cpdLeads: cpdLeads.length,
+            uncategorized: leadsData.length - (salonReferrals.length + educationLeads.length + cpdLeads.length)
+          });
           
           setLeads(educationLeads);
           setCpdPartnerships(cpdLeads);
@@ -159,8 +234,12 @@ export default function AdminDashboard() {
             createdAt: ref.enquiryDate,
           }));
           
-          // Merge with existing bookings
-          setBookings((prev: any) => [...prev, ...referralBookings]);
+          // Merge with existing bookings using functional update to prevent race conditions
+          setBookings((prevBookings: any) => {
+            // Get existing non-referral bookings to avoid duplicates
+            const nonReferralBookings = prevBookings.filter((b: any) => !b.isReferral);
+            return [...nonReferralBookings, ...referralBookings];
+          });
         }
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error);
@@ -195,12 +274,25 @@ export default function AdminDashboard() {
         const leadsRes = await fetch('/api/admin/leads');
         if (leadsRes.ok) {
           const leadsData = await leadsRes.json();
-          const educationLeads = leadsData.filter((l: any) => 
-            l.leadType === 'education' || (!l.leadType && !l.institution)
+          
+          // Filter out salon referrals from education leads
+          const salonReferrals = leadsData.filter((l: any) => 
+            l.leadType === 'salon_referral' || 
+            l.source?.includes('salon_referral') ||
+            l.source === 'contact_form_salon' ||
+            l.source === 'external_booking_intent'
           );
+          
+          const educationLeads = leadsData.filter((l: any) => 
+            (l.leadType === 'education' || l.source === 'contact_form_education') && 
+            !salonReferrals.find((s: any) => s.id === l.id) &&
+            !l.institution
+          );
+          
           const cpdLeads = leadsData.filter((l: any) => 
             ['cpd', 'cpd_partnership'].includes(l.leadType || '') || l.institution
           );
+          
           setLeads(educationLeads);
           setCpdPartnerships(cpdLeads);
           
@@ -236,9 +328,16 @@ export default function AdminDashboard() {
     e.preventDefault();
     if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD || password === 'admin123') {
       setIsAuthenticated(true);
+      sessionStorage.setItem('admin_authenticated', 'true');
     } else {
       alert('Incorrect password');
     }
+  };
+
+  const handleLogout = () => {
+    sessionStorage.removeItem('admin_authenticated');
+    setIsAuthenticated(false);
+    setPassword('');
   };
 
   const handleRefresh = () => {
@@ -247,6 +346,201 @@ export default function AdminDashboard() {
 
   const handleExport = () => {
     alert('Export functionality coming soon!');
+  };
+
+  // Content Handlers
+  const handleCreateContentRequest = async (request: any) => {
+    try {
+      const response = await fetch('/api/admin/content/requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(request),
+      });
+
+      if (!response.ok) throw new Error('Failed to create content request');
+
+      const data = await response.json();
+      const createdContent = data.request;
+
+      // Generate content immediately (manual requests also auto-generate)
+      let generatedContentId = null;
+      if (createdContent?.id) {
+        const genResult = await handleGenerateContent(createdContent.id);
+        generatedContentId = genResult?.contentId;
+      }
+
+      // Refresh content queue
+      await fetchContentQueue();
+      setIsContentCreationModalOpen(false);
+
+      // Show success modal with content details - use the generated content ID!
+      setCreatedContentId(generatedContentId || createdContent.id);
+      setCreatedContentTitle(createdContent.title || createdContent.topic);
+      setIsContentSuccessModalOpen(true);
+    } catch (error) {
+      console.error('Failed to create content request:', error);
+      alert('Failed to create content request');
+    }
+  };
+
+  const handleViewCreatedContent = () => {
+    if (createdContentId) {
+      setSelectedContentId(createdContentId);
+      setIsContentSuccessModalOpen(false);
+      setIsContentPreviewModalOpen(true);
+    }
+  };
+
+  const handleCreateFromSuggestion = async (suggestion: any) => {
+    try {
+      console.log('🎯 Creating content from suggestion:', suggestion.title);
+      
+      const response = await fetch('/api/admin/content/requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          topic: suggestion.title,
+          category: suggestion.category,
+          summary: suggestion.rationale,
+          audience: suggestion.targetAudience,
+          targetKeywords: suggestion.potentialKeywords,
+          requestedBy: 'Luke Roberts',
+          metadata: { fromSuggestion: true },
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create content request');
+      }
+
+      const data = await response.json();
+      const createdContent = data.request;
+      console.log('✅ Content request created:', createdContent.id);
+
+      let generatedContentId = null;
+
+      // Generate immediately
+      if (createdContent?.id) {
+        console.log('🚀 Starting content generation...');
+        const genResult = await handleGenerateContent(createdContent.id);
+        generatedContentId = genResult?.contentId;
+        console.log('✅ Content generation complete! Content ID:', generatedContentId);
+      }
+      
+      // Refresh the content queue
+      await fetchContentQueue();
+
+      // Show success modal with content details - use the generated content ID, not the request ID!
+      setCreatedContentId(generatedContentId || createdContent.id);
+      setCreatedContentTitle(createdContent.title || createdContent.topic);
+      setIsContentSuccessModalOpen(true);
+    } catch (error: any) {
+      console.error('❌ Failed to create from suggestion:', error);
+      alert(`Failed: ${error.message || 'Unknown error'}`);
+      throw error; // Re-throw so loading state clears properly
+    }
+  };
+
+  const handleGenerateContent = async (requestId?: string) => {
+    try {
+      const response = await fetch('/api/admin/content/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          requestId,
+          reviewedBy: 'Luke Roberts',
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to generate content');
+
+      const result = await response.json();
+
+      // Refresh content queue
+      await fetchContentQueue();
+      
+      return result; // Return the result which contains contentId
+    } catch (error) {
+      console.error('Failed to generate content:', error);
+      alert('Failed to generate content');
+      return null;
+    }
+  };
+
+  const handlePreviewContent = (item: any) => {
+    setSelectedContentId(item.id);
+    setIsContentPreviewModalOpen(true);
+  };
+
+  const handleEditContent = (item: any) => {
+    setSelectedContentId(item.id);
+    setIsContentPreviewModalOpen(true);
+  };
+
+  const handleDeleteContent = async (id: string) => {
+    if (!confirm('Are you sure you want to archive this content?')) return;
+
+    try {
+      const response = await fetch(`/api/admin/content/queue/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) throw new Error('Failed to delete content');
+
+      await fetchContentQueue();
+    } catch (error) {
+      console.error('Failed to delete content:', error);
+      alert('Failed to delete content');
+    }
+  };
+
+  const handleContentStatusChange = async (id: string, status: string) => {
+    try {
+      const response = await fetch(`/api/admin/content/queue/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+
+      if (!response.ok) throw new Error('Failed to update status');
+
+      await fetchContentQueue();
+    } catch (error) {
+      console.error('Failed to update status:', error);
+      alert('Failed to update status');
+    }
+  };
+
+  const handleSaveContent = async (updates: any) => {
+    if (!selectedContentId) return;
+
+    try {
+      const response = await fetch(`/api/admin/content/queue/${selectedContentId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+
+      if (!response.ok) throw new Error('Failed to save content');
+
+      await fetchContentQueue();
+    } catch (error) {
+      console.error('Failed to save content:', error);
+      throw error;
+    }
+  };
+
+  const fetchContentQueue = async () => {
+    try {
+      const response = await fetch('/api/admin/content/queue');
+      if (response.ok) {
+        const data = await response.json();
+        setContentQueue(data.content || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch content queue:', error);
+    }
   };
 
   if (!isAuthenticated) {
@@ -287,6 +581,7 @@ export default function AdminDashboard() {
       <AdminSidebar 
         activeTab={activeTab} 
         onTabChange={setActiveTab}
+        onLogout={handleLogout}
         stats={{
           activeLeads: leads.length,
           pendingBookings: stats.pendingBookings,
@@ -313,6 +608,7 @@ export default function AdminDashboard() {
                   {activeTab === 'cpd' && 'College Partnerships'}
                   {activeTab === 'chat' && 'Chat Sessions'}
                   {activeTab === 'services' && 'Services'}
+                  {activeTab === 'content' && 'Content Engine'}
                 </h1>
                 <p className="text-lg text-zinc-400">
                   {activeTab === 'overview' && 'Monitor your business performance'}
@@ -321,6 +617,7 @@ export default function AdminDashboard() {
                   {activeTab === 'cpd' && 'Educational programs for colleges and institutions'}
                   {activeTab === 'chat' && 'AI chat interactions'}
                   {activeTab === 'services' && 'Manage services and pricing'}
+                  {activeTab === 'content' && 'AI-powered content creation and management'}
                 </p>
               </div>
               <div className="flex items-center gap-3">
@@ -342,6 +639,15 @@ export default function AdminDashboard() {
                     New Booking
                   </button>
                 )}
+                {activeTab === 'content' && (
+                  <button 
+                    onClick={() => setIsContentCreationModalOpen(true)}
+                    className="admin-btn-primary flex items-center gap-2"
+                  >
+                    <Plus size={18} />
+                    Create Content
+                  </button>
+                )}
                 <button 
                   onClick={handleRefresh}
                   className="admin-btn-secondary flex items-center gap-2"
@@ -360,6 +666,48 @@ export default function AdminDashboard() {
               </div>
             </div>
           </motion.div>
+
+          {/* Debug Panel - Only visible when there are leads */}
+          {(leads.length > 0 || cpdPartnerships.length > 0) && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-8 admin-card p-6"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-white">Debug Info</h3>
+                <span className="text-xs text-zinc-500">Real-time lead categorization</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-zinc-700/50 rounded-lg p-4">
+                  <div className="text-sm text-zinc-400 mb-1">Stylist Training</div>
+                  <div className="text-2xl font-bold text-white">{leads.length}</div>
+                  <div className="text-xs text-zinc-500 mt-2">
+                    {leads.slice(0, 2).map(l => l.email).join(', ')}
+                    {leads.length > 2 && ` +${leads.length - 2} more`}
+                  </div>
+                </div>
+                <div className="bg-indigo-500/20 rounded-lg p-4 border border-indigo-500/30">
+                  <div className="text-sm text-indigo-300 mb-1">College Partnerships</div>
+                  <div className="text-2xl font-bold text-white">{cpdPartnerships.length}</div>
+                  <div className="text-xs text-indigo-300 mt-2">
+                    {cpdPartnerships.slice(0, 2).map(l => l.institution || l.email).join(', ')}
+                    {cpdPartnerships.length > 2 && ` +${cpdPartnerships.length - 2} more`}
+                  </div>
+                </div>
+                <div className="bg-purple-500/20 rounded-lg p-4 border border-purple-500/30">
+                  <div className="text-sm text-purple-300 mb-1">Salon Bookings</div>
+                  <div className="text-2xl font-bold text-white">{bookings.filter(b => b.isReferral).length}</div>
+                  <div className="text-xs text-purple-300 mt-2">
+                    Partner salon referrals
+                  </div>
+                </div>
+              </div>
+              <div className="mt-4 text-xs text-zinc-500">
+                💡 Check browser console (F12) for detailed categorization logs
+              </div>
+            </motion.div>
+          )}
 
           {/* Tab Content */}
           <AnimatePresence mode="wait">
@@ -488,7 +836,11 @@ export default function AdminDashboard() {
                 </div>
                 
                 {bookingView === 'table' ? (
-                  <BookingsTable bookings={bookings} searchTerm={searchTerm} />
+                  <BookingsTable 
+                    bookings={bookings} 
+                    searchTerm={searchTerm}
+                    onViewBooking={handleViewBooking}
+                  />
                 ) : (
                   <CalendarView 
                     bookings={bookings as any}
@@ -581,6 +933,55 @@ export default function AdminDashboard() {
                 <ServicesManager />
               </motion.div>
             )}
+
+            {activeTab === 'content' && (
+              <motion.div
+                key="content"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-6"
+              >
+                {/* Content View Tabs */}
+                <div className="flex gap-2 mb-6">
+                  <button
+                    onClick={() => setContentView('queue')}
+                    className={contentView === 'queue' ? 'admin-btn-primary' : 'admin-btn-secondary'}
+                  >
+                    Content Queue
+                  </button>
+                  <button
+                    onClick={() => setContentView('suggestions')}
+                    className={contentView === 'suggestions' ? 'admin-btn-primary' : 'admin-btn-secondary'}
+                  >
+                    AI Suggestions
+                  </button>
+                  <button
+                    onClick={() => setContentView('analytics')}
+                    className={contentView === 'analytics' ? 'admin-btn-primary' : 'admin-btn-secondary'}
+                  >
+                    Analytics
+                  </button>
+                </div>
+
+                {contentView === 'queue' && (
+                  <ContentQueueTable
+                    content={contentQueue}
+                    onPreview={handlePreviewContent}
+                    onEdit={handleEditContent}
+                    onDelete={handleDeleteContent}
+                    onStatusChange={handleContentStatusChange}
+                  />
+                )}
+
+                {contentView === 'suggestions' && (
+                  <ContentTopicSuggestions onCreateRequest={handleCreateFromSuggestion} />
+                )}
+
+                {contentView === 'analytics' && <ContentAnalyticsDashboard />}
+              </motion.div>
+            )}
           </AnimatePresence>
         </div>
       </div>
@@ -615,6 +1016,36 @@ export default function AdminDashboard() {
         onClose={() => setIsBookingModalOpen(false)}
         onUpdate={handleUpdateBooking}
       />
+
+      <ContentCreationModal
+        isOpen={isContentCreationModalOpen}
+        onClose={() => setIsContentCreationModalOpen(false)}
+        onSubmit={handleCreateContentRequest}
+      />
+
+      <ContentSuccessModal
+        isOpen={isContentSuccessModalOpen}
+        onClose={() => {
+          setIsContentSuccessModalOpen(false);
+          setCreatedContentId(null);
+          setCreatedContentTitle('');
+        }}
+        onViewContent={handleViewCreatedContent}
+        contentTitle={createdContentTitle}
+      />
+
+      {selectedContentId && (
+        <ContentPreviewModal
+          isOpen={isContentPreviewModalOpen}
+          onClose={() => {
+            setIsContentPreviewModalOpen(false);
+            setSelectedContentId(null);
+          }}
+          contentId={selectedContentId}
+          onSave={handleSaveContent}
+          onPublish={fetchContentQueue}
+        />
+      )}
     </div>
   );
 }

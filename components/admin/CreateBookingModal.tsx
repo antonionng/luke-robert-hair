@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calendar, Clock, MapPin, User, Search, Plus } from 'lucide-react';
+import TimeSelector from '@/components/TimeSelector';
 
 interface CreateBookingModalProps {
   isOpen: boolean;
@@ -228,6 +229,7 @@ export default function CreateBookingModal({ isOpen, onClose, onSuccess, prefill
         <>
           {/* Backdrop */}
           <motion.div
+            key="backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -237,6 +239,7 @@ export default function CreateBookingModal({ isOpen, onClose, onSuccess, prefill
 
           {/* Modal */}
           <motion.div
+            key="modal"
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -448,13 +451,12 @@ export default function CreateBookingModal({ isOpen, onClose, onSuccess, prefill
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-zinc-300 mb-2">Time *</label>
-                      <input
-                        type="time"
-                        name="time"
+                      <TimeSelector
                         value={formData.time}
-                        onChange={handleChange}
+                        onChange={(time) => setFormData({ ...formData, time })}
                         required
-                        className="admin-input w-full px-4 py-2"
+                        className="admin-select w-full px-4 py-2"
+                        placeholder="Select time"
                       />
                     </div>
                   </div>

@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Outfit, DM_Sans } from "next/font/google";
 import "./globals.css";
-import Navigation from "@/components/Navigation";
-import Footer from "@/components/Footer";
-import AIAssistant from "@/components/AIAssistant";
+import LayoutWrapper from "@/components/LayoutWrapper";
 // import FloatingBookButton from "@/components/FloatingBookButton";
 
 const displayFont = Cormorant_Garamond({
@@ -41,12 +39,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${displayFont.variable} ${headingFont.variable} ${bodyFont.variable}`}>
       <body className="font-body bg-offwhite text-graphite antialiased">
-        <Navigation />
-        <main className="min-h-screen">
+        <LayoutWrapper>
           {children}
-        </main>
-        <Footer />
-        <AIAssistant />
+        </LayoutWrapper>
         {/* <FloatingBookButton /> */}
       </body>
     </html>

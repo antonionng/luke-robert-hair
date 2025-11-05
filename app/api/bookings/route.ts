@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { db as supabaseDb } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
   try {
@@ -57,15 +58,12 @@ export async function GET(request: NextRequest) {
 
     // If requesting services
     if (fetchServices === 'true') {
-      // For now, return hardcoded services until we have them in DB
-      const services = [
-        { id: '1', name: 'Precision Cut', price: 65, duration: 60 },
-        { id: '2', name: 'Cut & Finish', price: 85, duration: 90 },
-        { id: '3', name: 'Colour Service', price: 120, duration: 120 },
-        { id: '4', name: 'Balayage', price: 180, duration: 180 },
-        { id: '5', name: 'Restyle', price: 95, duration: 90 },
-      ];
-      return NextResponse.json({ services });
+      const { data: services, error } = await supabaseDb.getServices(true);
+      if (error) {
+        console.error('Error fetching services:', error);
+        return NextResponse.json({ services: [] });
+      }
+      return NextResponse.json({ services: services || [] });
     }
 
     // If requesting locations
@@ -74,11 +72,12 @@ export async function GET(request: NextRequest) {
         {
           id: 'salon-by-altin',
           name: 'The Salon By Altin Ltd',
-          displayName: 'Luke Robert Hair',
+          displayName: 'Alternate Salon',
           address: '19 Church Street, Caversham, RG4 8BA',
           city: 'Reading',
-          phone: null,
-          bookingSystem: 'ours'
+          phone: '01189073333',
+          bookingSystem: 'ours',
+          isPartner: true
         },
         {
           id: 'urban-sanctuary',
@@ -87,7 +86,8 @@ export async function GET(request: NextRequest) {
           phone: '01565 123 456',
           city: 'Knutsford',
           bookingSystem: 'theirs',
-          externalUrl: 'https://urbansanctuary.org.uk/book-online/'
+          externalUrl: 'https://urbansanctuary.org.uk/book-online/',
+          isPartner: true
         },
         {
           id: 'fixx-salon',
@@ -96,7 +96,8 @@ export async function GET(request: NextRequest) {
           phone: '0161 123 4567',
           city: 'Altrincham',
           bookingSystem: 'theirs',
-          externalUrl: 'https://phorest.com/book/salons/fixxsalonsltd'
+          externalUrl: 'https://phorest.com/book/salons/fixxsalonsltd',
+          isPartner: true
         },
       ];
       return NextResponse.json({ locations });

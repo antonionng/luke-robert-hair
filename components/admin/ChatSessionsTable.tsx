@@ -89,7 +89,7 @@ export default function ChatSessionsTable({ sessions }: ChatSessionsTableProps) 
                   <div className="flex items-center gap-2">
                     {getOutcomeIcon(session.outcome)}
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${getOutcomeBadge(session.outcome)}`}>
-                      {session.outcome.charAt(0).toUpperCase() + session.outcome.slice(1)}
+                      {session.outcome ? session.outcome.charAt(0).toUpperCase() + session.outcome.slice(1) : 'Unknown'}
                     </span>
                   </div>
                 </td>

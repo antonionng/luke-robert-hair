@@ -44,11 +44,28 @@ export async function GET(request: Request) {
       throw error;
     }
 
+    console.log(`📊 Admin Leads API: Fetched ${leads?.length || 0} leads from database`);
+
     // Format the data for the frontend
     const formattedLeads = leads?.map(lead => {
       const customFields = (lead.custom_fields as any) || {};
       const isCPD = customFields.leadType === 'cpd_partnership' || lead.source?.includes('cpd');
-      const isSalonReferral = customFields.leadType === 'salon_referral' || lead.source?.includes('salon_referral');
+      const isSalonReferral = 
+        customFields.leadType === 'salon_referral' || 
+        lead.source?.includes('salon_referral') ||
+        lead.source === 'contact_form_salon' ||
+        lead.source === 'external_booking_intent' ||
+        (lead.source === 'contact_form_general' && customFields.enquiryType === 'client');
+      
+      console.log(`🔍 Processing lead ${lead.email}:`, {
+        id: lead.id,
+        source: lead.source,
+        customFieldsLeadType: customFields.leadType,
+        isCPD,
+        isSalonReferral,
+        institution: customFields.institution,
+        referralSalon: customFields.referralSalon
+      });
       
       return {
         id: lead.id,
@@ -85,11 +102,38 @@ export async function GET(request: Request) {
         
         // Estimated value
         value: estimateLeadValue(lead.course_interest, customFields, isCPD),
+        estimatedValue: estimateLeadValue(lead.course_interest, customFields, isCPD),
         
         // Notes
         notes: lead.notes,
       };
     }) || [];
+
+    // Log categorization summary
+    const cpdCount = formattedLeads.filter(l => l.leadType === 'cpd').length;
+    const educationCount = formattedLeads.filter(l => l.leadType === 'education').length;
+    const salonReferralCount = formattedLeads.filter(l => l.leadType === 'salon_referral').length;
+    
+    console.log('📈 Lead Categorization Summary:', {
+      total: formattedLeads.length,
+      cpd: cpdCount,
+      education: educationCount,
+      salonReferral: salonReferralCount,
+      breakdown: {
+        cpd: formattedLeads.filter(l => l.leadType === 'cpd').map(l => ({
+          email: l.email,
+          institution: l.institution
+        })),
+        education: formattedLeads.filter(l => l.leadType === 'education').map(l => ({
+          email: l.email,
+          course: l.course
+        })),
+        salonReferral: formattedLeads.filter(l => l.leadType === 'salon_referral').map(l => ({
+          email: l.email,
+          salon: l.referralSalon
+        }))
+      }
+    });
 
     return NextResponse.json(formattedLeads);
   } catch (error: any) {
