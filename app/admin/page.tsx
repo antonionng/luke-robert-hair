@@ -580,7 +580,7 @@ export default function AdminDashboard() {
       {/* Sidebar */}
       <AdminSidebar 
         activeTab={activeTab} 
-        onTabChange={setActiveTab}
+        onTabChange={(tab) => setActiveTab(tab as typeof activeTab)}
         onLogout={handleLogout}
         stats={{
           activeLeads: leads.length,
