@@ -105,6 +105,10 @@ export interface Booking {
   };
   parentBookingId?: string; // If part of recurring series
   
+  // Referral tracking
+  isReferral?: boolean; // Booking came from salon partner referral
+  referralSource?: string; // Partner salon name or source
+  
   // Status
   status: 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'rescheduled';
   cancellationReason?: string;
