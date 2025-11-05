@@ -765,15 +765,15 @@ async function buildContentContext(
   const requestKeywords = options.request?.target_keywords;
   const targetKeywords = Array.isArray(requestKeywords)
     ? (requestKeywords as string[])
-    : typeof requestKeywords === 'string'
-    ? requestKeywords.split(/[;,\n]/).map(item => item.trim()).filter(Boolean)
+    : typeof requestKeywords === 'string' && requestKeywords
+    ? (requestKeywords as string).split(/[;,\n]/).map(item => item.trim()).filter(Boolean)
     : [];
 
   const requestLinks = options.request?.inspiration_links;
   const inspirationLinks = Array.isArray(requestLinks)
     ? (requestLinks as string[])
-    : typeof requestLinks === 'string'
-    ? requestLinks.split(/[\s,]+/).filter(Boolean)
+    : typeof requestLinks === 'string' && requestLinks
+    ? (requestLinks as string).split(/[\s,]+/).filter(Boolean)
     : [];
 
   return {
