@@ -344,13 +344,13 @@ export async function generateBlogPost(options: GenerateBlogPostOptions = {}): P
       }
 
       request = requestRecord;
-      category = (request.category as ContentCategory) || category || await selectNextCategory();
-      topic = request.topic;
+      category = (request!.category as ContentCategory) || category || await selectNextCategory();
+      topic = request!.topic;
 
-      await db.updateContentRequest(request.id, {
+      await db.updateContentRequest(request!.id, {
         status: 'generating',
         metadata: {
-          ...(request.metadata as Record<string, any> | null ?? {}),
+          ...(request!.metadata as Record<string, any> | null ?? {}),
           generation_started_at: new Date().toISOString(),
         },
       });
