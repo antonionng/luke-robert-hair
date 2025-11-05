@@ -414,11 +414,11 @@ Please correct these issues:
       
       console.log(`🔄 Retrying generation with validation feedback...`);
     }
-    const image = await generateContentImage(aiContent.title, category!, aiContent.imagePrompt);
+    const image = await generateContentImage(aiContent!.title, category!, aiContent!.imagePrompt);
 
-    const wordCount = computeWordCount(aiContent.body);
+    const wordCount = computeWordCount(aiContent!.body);
     const readingTime = estimateReadingTimeMinutes(wordCount);
-    const previewHtml = markdownToPreviewHtml(aiContent.body);
+    const previewHtml = markdownToPreviewHtml(aiContent!.body);
     const now = new Date();
     const autoPublish = options.autoPublish ?? request?.auto_publish ?? false;
 
@@ -433,7 +433,7 @@ Please correct these issues:
 
     const requestMetadata = (request?.metadata as Record<string, any> | null) ?? {};
     const optionMetadata = options.metadata ?? {};
-    const aiMetadata = aiContent.metadata ?? {};
+    const aiMetadata = aiContent!.metadata ?? {};
 
     const pinnedUntilSource =
       optionMetadata.pinned_until ??
@@ -470,10 +470,10 @@ Please correct these issues:
 
     const insertPayload: ContentQueueInsert = {
       request_id: request?.id || null,
-      title: aiContent.title,
-      slug: slugify(aiContent.title),
-      excerpt: aiContent.excerpt,
-      content: aiContent.body,
+      title: aiContent!.title,
+      slug: slugify(aiContent!.title),
+      excerpt: aiContent!.excerpt,
+      content: aiContent!.body,
       category: category!,
       image_url: image.url,
       image_prompt: image.prompt,
@@ -488,21 +488,21 @@ Please correct these issues:
       ai_generated: true,
       ai_model: 'gpt-4o-mini',
       generation_prompt: JSON.stringify(contentContext),
-      outline: aiContent.outline,
-      editor_state: aiContent.editorState ?? [],
+      outline: aiContent!.outline,
+      editor_state: aiContent!.editorState ?? [],
       metadata: combinedMetadata,
-      seo_title: aiContent.seoTitle || aiContent.title,
-      meta_description: aiContent.metaDescription,
-      keywords: aiContent.keywords,
-      insight_tags: aiContent.insightTags,
-      cta_label: aiContent.cta?.label,
-      cta_url: aiContent.cta?.url,
-      cta_description: aiContent.cta?.description,
+      seo_title: aiContent!.seoTitle || aiContent!.title,
+      meta_description: aiContent!.metaDescription,
+      keywords: aiContent!.keywords,
+      insight_tags: aiContent!.insightTags,
+      cta_label: aiContent!.cta?.label,
+      cta_url: aiContent!.cta?.url,
+      cta_description: aiContent!.cta?.description,
       preview_html: previewHtml,
       preview_generated_at: now.toISOString(),
       last_previewed_at: now.toISOString(),
       last_previewed_by: request?.requested_by || options.requestedBy || 'system',
-      editor_notes: aiContent.editorNotes || request?.notes || undefined,
+      editor_notes: aiContent!.editorNotes || request?.notes || undefined,
       word_count: wordCount,
       reading_time_minutes: readingTime,
     };
