@@ -1182,7 +1182,7 @@ export const db = {
   async getContentAnalyticsSummary(contentId: string) {
     return supabase
       .from('content_analytics_events')
-      .select('event_type, total:event_value.sum()', { group: 'event_type' })
+      .select('event_type, total:event_value.sum()')
       .eq('content_id', contentId);
   },
 
