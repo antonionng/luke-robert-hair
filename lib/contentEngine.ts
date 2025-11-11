@@ -419,7 +419,7 @@ Please correct these issues:
     }
     
     // Determine if brand images should be used (default to true)
-    const useBrandImage = options.useBrandImage ?? request?.metadata?.useBrandImage ?? true;
+    const useBrandImage = options.useBrandImage ?? (request?.metadata as any)?.useBrandImage ?? true;
     const image = await generateContentImage(aiContent!.title, category!, aiContent!.imagePrompt, useBrandImage);
 
     const wordCount = computeWordCount(aiContent!.body);
