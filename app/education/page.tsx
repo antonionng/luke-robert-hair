@@ -5,11 +5,37 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { GraduationCap, Award, Users, Target } from 'lucide-react';
 import CourseCard from '@/components/CourseCard';
+import StructuredData from '@/components/StructuredData';
 import { courses } from '@/lib/data';
+import { 
+  generateCourseSchema,
+  generatePersonSchema,
+  generateBreadcrumbs,
+  siteConfig,
+} from '@/lib/seo';
 
 export default function EducationPage() {
   return (
     <div className="pt-20">
+      {/* Structured Data for SEO */}
+      <StructuredData 
+        data={[
+          generatePersonSchema(),
+          ...courses.map(course => 
+            generateCourseSchema({
+              name: course.title,
+              description: course.description,
+              provider: siteConfig.name,
+              duration: course.duration,
+            })
+          ),
+          generateBreadcrumbs([
+            { name: 'Home', url: '/' },
+            { name: 'Education', url: '/education' },
+          ]),
+        ]} 
+      />
+
       {/* Hero Section */}
       <section className="section-padding bg-sage-pale/30">
         <div className="container-custom">
@@ -59,15 +85,15 @@ export default function EducationPage() {
             <h2>Why I Teach</h2>
             <p className="text-xl text-graphite/70 leading-relaxed">
               I remember the fear of standing behind the chair early in my career. That moment when you are not quite sure 
-              if you can deliver what the client wants. I have been there. Now, as a L'Oréal Professional Ambassador, 
-              I help stylists move past that fear and into true confidence. Every course I teach is about giving you 
-              techniques that work - not just once, but every single time.
+              if you can deliver what the client wants. I have been there. Now I help stylists move past that fear and into 
+              true confidence. Every course I teach is about giving you techniques that work - not just once, but every 
+              single time.
             </p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {[
-              { icon: Award, title: 'L\'Oréal Educator', desc: 'Official training partner' },
+              { icon: Award, title: '15+ Years', desc: 'Industry experience' },
               { icon: Users, title: '500+ Stylists', desc: 'Trained nationwide' },
               { icon: Target, title: 'Precision Focus', desc: 'Structured methodology' },
               { icon: GraduationCap, title: 'All Levels', desc: 'Foundation to advanced' },

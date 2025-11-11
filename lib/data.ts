@@ -18,7 +18,7 @@ export const services: Service[] = [
   {
     id: 'gents-hairstyles',
     name: 'Gents Hairstyles',
-    description: 'A complete grooming experience tailored for men. From classic cuts to modern styles, I will create a look that suits your lifestyle and is easy to maintain. Includes consultation, precision cutting, and styling guidance.',
+    description: 'A complete grooming experience tailored for men. From classic haircuts to modern styles, I will create a look that suits your lifestyle and is easy to maintain. Includes consultation, precision cutting, and styling guidance.',
     price: '£49',
     duration: '45 mins',
   },
@@ -45,7 +45,7 @@ export const courses: Course[] = [
     description: 'I will push you beyond your limits. Master advanced techniques that let you create anything you envision. Become the stylist others look up to.',
     duration: '1 Day',
     level: 'Advanced',
-    price: '£550',
+    price: '£599',
     highlights: [
       'Advanced layering and texturising',
       'Freehand cutting techniques',
@@ -59,7 +59,7 @@ export const courses: Course[] = [
     description: 'Accelerate your mastery with personalized coaching directly from me. I will help you refine your technique, strengthen your brand, and unlock your full potential.',
     duration: 'Flexible',
     level: 'Mentorship',
-    price: 'From £350/day',
+    price: 'From £399/day',
     highlights: [
       'Customised curriculum',
       'Direct feedback and coaching',
@@ -111,7 +111,7 @@ export const featuredInsights = [
   {
     id: '1',
     title: 'Why Your Haircut Should Last 8-10 Weeks',
-    excerpt: 'Discover the precision cutting principles I use to create cuts that grow out beautifully. Learn what makes a truly sustainable haircut and why it matters for your style and budget.',
+    excerpt: 'Discover the precision cutting principles I use to create haircuts that grow out beautifully. Learn what makes a truly sustainable haircut and why it matters for your style and budget.',
     category: 'Technique',
     readTime: '5 min read',
     imageUrl: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=1974&auto=format&fit=crop',

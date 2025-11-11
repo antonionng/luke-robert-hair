@@ -10,6 +10,7 @@ interface BookingStore extends BookingState {
   setClient: (client: Partial<ClientDetails>) => void;
   setConsultation: (consultation: AIConsultation) => void;
   setRecurring: (isRecurring: boolean, pattern?: Booking['recurringPattern']) => void;
+  setReferralCode: (code: string | null, discount: number | null) => void;
   nextStep: () => void;
   previousStep: () => void;
   goToStep: (step: number) => void;
@@ -33,6 +34,8 @@ const initialState: BookingState = {
   consultation: null,
   isRecurring: false,
   recurringPattern: null,
+  referralCode: null,
+  referralDiscount: null,
 };
 
 export const useBookingStore = create<BookingStore>()(
@@ -55,6 +58,11 @@ export const useBookingStore = create<BookingStore>()(
       setRecurring: (isRecurring, pattern) => set({
         isRecurring,
         recurringPattern: pattern || null,
+      }),
+      
+      setReferralCode: (code, discount) => set({
+        referralCode: code,
+        referralDiscount: discount,
       }),
       
       nextStep: () => set((state) => ({
@@ -80,6 +88,8 @@ export const useBookingStore = create<BookingStore>()(
         consultation: state.consultation,
         isRecurring: state.isRecurring,
         recurringPattern: state.recurringPattern,
+        referralCode: state.referralCode,
+        referralDiscount: state.referralDiscount,
       }),
     }
   )

@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import BookingWizard from '@/components/booking/BookingWizard';
 import ExternalBookingCapture from '@/components/booking/ExternalBookingCapture';
+import StructuredData from '@/components/StructuredData';
+import { generateBreadcrumbs } from '@/lib/seo';
 
 interface Location {
   id: string;
@@ -49,6 +51,16 @@ export default function BookPage() {
 
   return (
     <div className="pt-20 min-h-screen bg-sage-pale/30">
+      {/* Structured Data for SEO */}
+      <StructuredData 
+        data={[
+          generateBreadcrumbs([
+            { name: 'Home', url: '/' },
+            { name: 'Book', url: '/book' },
+          ]),
+        ]} 
+      />
+      
       <div className="section-padding">
         {!selectedLocation ? (
           // Step 1: Location Selection

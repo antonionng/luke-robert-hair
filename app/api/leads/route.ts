@@ -193,6 +193,30 @@ export async function POST(request: NextRequest) {
       score: newLead.lead_score,
     });
 
+    // Send admin notification for CPD leads (high priority - immediate alert)
+    // Education leads go in daily digest (lower priority)
+    if (leadType === 'cpd_partnership') {
+      try {
+        const { sendAdminNotification } = await import('@/lib/email');
+        await sendAdminNotification('cpd_enquiry', {
+          contactName: `${firstName} ${lastName}`,
+          email,
+          phone,
+          institution,
+          jobTitle,
+          studentNumbers,
+          deliveryPreference,
+          courseInterest,
+          message,
+          leadId: newLead.id,
+        });
+        console.log('✅ [LEADS API] Admin notification sent for CPD enquiry');
+      } catch (emailError) {
+        console.error('⚠️ [LEADS API] Failed to send admin notification:', emailError);
+        // Don't fail the entire request if email fails
+      }
+    }
+
     return NextResponse.json({ 
       success: true, 
       message: 'Thank you! We\'ll be in touch soon.',

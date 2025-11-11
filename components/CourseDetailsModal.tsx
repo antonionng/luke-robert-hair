@@ -28,7 +28,7 @@ const courseDetails: Record<string, {
           'Core cutting principles and angles',
           'Sectioning techniques for precision',
           'Tension control and hand positioning',
-          'Classic bob and one-length cuts',
+          'Classic bob and one-length haircuts',
         ],
       },
     ],

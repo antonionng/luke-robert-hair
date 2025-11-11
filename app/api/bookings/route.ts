@@ -24,9 +24,6 @@ export async function POST(request: NextRequest) {
       notes,
     });
 
-    // In production, send confirmation email using Resend
-    // await sendBookingConfirmation({ name, email, service, location, date, time });
-
     console.log('Booking created:', {
       bookingId: booking.id,
       contactId: contact.id,
@@ -35,6 +32,74 @@ export async function POST(request: NextRequest) {
       date,
       time,
     });
+
+    // Get service and location details from database
+    const { data: serviceData } = await supabaseDb.getServices(true);
+    const serviceDetails = serviceData?.find(s => s.id === service);
+    
+    // Get location details
+    const locations = [
+      {
+        id: 'salon-by-altin',
+        name: 'The Salon By Altin Ltd',
+        address: '19 Church Street, Caversham, RG4 8BA',
+      },
+      {
+        id: 'urban-sanctuary',
+        name: 'Urban Sanctuary',
+        address: '29 King St, Knutsford, WA16 6DW',
+      },
+      {
+        id: 'fixx-salon',
+        name: 'Fixx Salon',
+        address: '1b Lloyd St, Altrincham, WA14 2DD',
+      },
+    ];
+    const locationDetails = locations.find(l => l.id === location);
+
+    // Send confirmation email to user
+    try {
+      const { sendBookingConfirmation } = await import('@/lib/email');
+      await sendBookingConfirmation({
+        clientEmail: email,
+        clientName: name,
+        serviceName: serviceDetails?.name || service,
+        locationName: locationDetails?.name || location,
+        locationAddress: locationDetails?.address || 'TBC',
+        dateTime: new Date(`${date}T${time}`),
+        duration: serviceDetails?.duration_minutes || 60,
+        price: serviceDetails?.price || 0,
+        depositRequired: serviceDetails?.deposit_required || false,
+        depositAmount: serviceDetails?.deposit_amount || 0,
+        bookingId: booking.id,
+      });
+      console.log('✅ [BOOKINGS API] Confirmation email sent to user');
+    } catch (emailError) {
+      console.error('⚠️ [BOOKINGS API] Failed to send confirmation email:', emailError);
+      // Don't fail the entire request if email fails
+    }
+
+    // Send admin notification (high priority - immediate alert)
+    try {
+      const { sendAdminNotification } = await import('@/lib/email');
+      await sendAdminNotification('new_booking', {
+        clientName: name,
+        clientEmail: email,
+        clientPhone: phone,
+        serviceName: serviceDetails?.name || service,
+        locationName: locationDetails?.name || location,
+        dateTime: new Date(`${date}T${time}`),
+        price: serviceDetails?.price || 0,
+        depositRequired: serviceDetails?.deposit_required || false,
+        depositAmount: serviceDetails?.deposit_amount || 0,
+        notes,
+        bookingId: booking.id,
+      });
+      console.log('✅ [BOOKINGS API] Admin notification sent');
+    } catch (emailError) {
+      console.error('⚠️ [BOOKINGS API] Failed to send admin notification:', emailError);
+      // Don't fail the entire request if email fails
+    }
 
     return NextResponse.json({ 
       success: true, 

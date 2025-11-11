@@ -10,7 +10,7 @@ export default function Footer() {
           <div className="space-y-4">
             <h3 className="text-2xl font-playfair font-light">Luke Robert Hair</h3>
             <p className="text-sage-light text-sm leading-relaxed">
-              Precision hairdressing and professional education in Cheshire & Oxford.
+              Precision hairdressing and professional education in Cheshire & Berkshire.
             </p>
           </div>
 
@@ -36,6 +36,12 @@ export default function Footer() {
               <li>
                 <Link href="/book" className="text-sage-light hover:text-white transition-colors">
                   Book Appointment
+                </Link>
+              </li>
+              <li>
+                <Link href="/referrals" className="text-sage-light hover:text-white transition-colors inline-flex items-center gap-1">
+                  Refer a Friend 
+                  <span className="inline-block px-2 py-0.5 bg-purple-500 text-white text-xs rounded-full">£10 Off</span>
                 </Link>
               </li>
             </ul>
@@ -65,20 +71,20 @@ export default function Footer() {
             <h4 className="font-medium text-lg">Follow</h4>
             <div className="flex gap-4">
               <a
-                href="https://instagram.com"
+                href="https://instagram.com/lukerobert_hair"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 bg-white/10 rounded-full hover:bg-white/20 transition-colors"
-                aria-label="Instagram"
+                aria-label="Instagram - @lukerobert_hair"
               >
                 <Instagram size={20} />
               </a>
               <a
-                href="https://facebook.com"
+                href="https://www.facebook.com/lukeroberthair"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 bg-white/10 rounded-full hover:bg-white/20 transition-colors"
-                aria-label="Facebook"
+                aria-label="Facebook - Luke Robert Hair"
               >
                 <Facebook size={20} />
               </a>

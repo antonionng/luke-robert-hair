@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { useBookingStore } from '@/lib/bookingStore';
 import { validateEmail, validatePhoneNumber } from '@/lib/bookingUtils';
 import { ArrowLeft, ArrowRight, User, Mail, Phone, MessageSquare, AlertCircle } from 'lucide-react';
+import ReferralCodeInput from '../ReferralCodeInput';
 
 export default function ClientDetails() {
   const { client, setClient, nextStep, previousStep } = useBookingStore();
@@ -130,6 +131,9 @@ export default function ClientDetails() {
             We'll send your confirmation and reminders to this email
           </p>
         </div>
+
+        {/* Referral Code */}
+        <ReferralCodeInput />
 
         {/* Phone */}
         <div>

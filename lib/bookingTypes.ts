@@ -135,6 +135,8 @@ export interface BookingState {
   consultation: AIConsultation | null;
   isRecurring: boolean;
   recurringPattern: Booking['recurringPattern'] | null;
+  referralCode: string | null;
+  referralDiscount: number | null;
 }
 
 // Schedule configuration

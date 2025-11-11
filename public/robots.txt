@@ -1,0 +1,27 @@
+# Robots.txt for Luke Robert Hair
+# https://lukeroberthair.com
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://lukeroberthair.com/sitemap.xml
+
+# Disallow admin areas
+Disallow: /admin/
+Disallow: /api/
+
+# Allow search engines to crawl
+Allow: /
+Allow: /about
+Allow: /salon
+Allow: /education
+Allow: /cpd-partnerships
+Allow: /contact
+Allow: /insights
+Allow: /book
+Allow: /referrals
+
+# Crawl-delay (optional, use only if needed)
+# Crawl-delay: 1
+

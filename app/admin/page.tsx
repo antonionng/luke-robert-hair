@@ -24,6 +24,7 @@ import ContentPreviewModal from '@/components/admin/ContentPreviewModal';
 import ContentSuccessModal from '@/components/admin/ContentSuccessModal';
 import ContentTopicSuggestions from '@/components/admin/ContentTopicSuggestions';
 import ContentAnalyticsDashboard from '@/components/admin/ContentAnalyticsDashboard';
+import ReferralsTable from '@/components/admin/ReferralsTable';
 import { getAllBookings } from '@/lib/bookingStore';
 import { Booking as BookingType } from '@/lib/bookingTypes';
 
@@ -50,7 +51,7 @@ export default function AdminDashboard() {
       setIsAuthenticated(true);
     }
   }, []);
-  const [activeTab, setActiveTab] = useState<'overview' | 'bookings' | 'leads' | 'cpd' | 'chat' | 'services' | 'content'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'bookings' | 'leads' | 'cpd' | 'chat' | 'services' | 'content' | 'referrals'>('overview');
   const [searchTerm, setSearchTerm] = useState('');
   const [bookingView, setBookingView] = useState<'table' | 'calendar'>('table');
   
@@ -89,6 +90,7 @@ export default function AdminDashboard() {
   const [upcomingBookings, setUpcomingBookings] = useState<any[]>([]);
   const [hotLeads, setHotLeads] = useState<any[]>([]);
   const [chatActivity, setChatActivity] = useState<any[]>([]);
+  const [referralData, setReferralData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   
   // Fetch dashboard data
@@ -240,6 +242,13 @@ export default function AdminDashboard() {
             const nonReferralBookings = prevBookings.filter((b: any) => !b.isReferral);
             return [...nonReferralBookings, ...referralBookings];
           });
+        }
+
+        // Fetch referral data
+        const referralsRes = await fetch('/api/admin/referrals');
+        if (referralsRes.ok) {
+          const referralsData = await referralsRes.json();
+          setReferralData(referralsData);
         }
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error);
@@ -609,6 +618,7 @@ export default function AdminDashboard() {
                   {activeTab === 'chat' && 'Chat Sessions'}
                   {activeTab === 'services' && 'Services'}
                   {activeTab === 'content' && 'Content Engine'}
+                  {activeTab === 'referrals' && 'Referral Program'}
                 </h1>
                 <p className="text-lg text-zinc-400">
                   {activeTab === 'overview' && 'Monitor your business performance'}
@@ -618,6 +628,7 @@ export default function AdminDashboard() {
                   {activeTab === 'chat' && 'AI chat interactions'}
                   {activeTab === 'services' && 'Manage services and pricing'}
                   {activeTab === 'content' && 'AI-powered content creation and management'}
+                  {activeTab === 'referrals' && 'Client-to-client referral tracking and analytics'}
                 </p>
               </div>
               <div className="flex items-center gap-3">
@@ -980,6 +991,34 @@ export default function AdminDashboard() {
                 )}
 
                 {contentView === 'analytics' && <ContentAnalyticsDashboard />}
+              </motion.div>
+            )}
+
+            {activeTab === 'referrals' && (
+              <motion.div
+                key="referrals"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.2 }}
+              >
+                {referralData ? (
+                  <ReferralsTable
+                    leaderboard={referralData.leaderboard || []}
+                    aggregateStats={referralData.aggregateStats || {
+                      totalCodes: 0,
+                      activeCodes: 0,
+                      totalRedemptions: 0,
+                      totalCompletedBookings: 0,
+                      totalDiscountsGiven: 0,
+                      overallConversionRate: 0,
+                    }}
+                  />
+                ) : (
+                  <div className="text-center py-12 text-zinc-500">
+                    Loading referral data...
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>

@@ -7,13 +7,16 @@ import { formatDate, formatTime, calculateEndTime, generateConfirmationCode, cal
 import { ArrowLeft, Calendar, MapPin, Clock, User, Mail, Phone, AlertCircle, CheckCircle2, Repeat } from 'lucide-react';
 
 export default function ReviewConfirm() {
-  const { service, location, date, time, client, isRecurring, recurringPattern, nextStep, previousStep, goToStep } = useBookingStore();
+  const { service, location, date, time, client, isRecurring, recurringPattern, referralCode, referralDiscount, nextStep, previousStep, goToStep } = useBookingStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [agreedToPolicy, setAgreedToPolicy] = useState(false);
   const [showRecurring, setShowRecurring] = useState(false);
 
   const depositAmount = service ? calculateDeposit(service) : 0;
   const endTime = service && time ? calculateEndTime(time, service.duration) : '';
+  const originalPrice = service?.price || 0;
+  const discountAmount = referralDiscount || 0;
+  const finalPrice = Math.max(0, originalPrice - discountAmount);
 
   const handleConfirmBooking = async () => {
     if (!service || !location || !date || !time || !client.firstName || !client.lastName || !client.email || !client.phone) {
@@ -43,8 +46,10 @@ export default function ReviewConfirm() {
         depositRequired: service.requiresDeposit,
         depositAmount,
         depositPaid: false,
-        totalPrice: service.price,
+        totalPrice: finalPrice,
         isRecurring,
+        isReferral: !!referralCode,
+        referralSource: referralCode || undefined,
         recurringPattern: isRecurring && recurringPattern ? recurringPattern : undefined,
         status: 'pending' as const,
         createdAt: new Date(),
@@ -92,10 +97,30 @@ export default function ReviewConfirm() {
               <span className="text-graphite/70">Duration:</span>
               <span className="font-medium text-graphite">{service?.duration} minutes</span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-graphite/70">Price:</span>
-              <span className="font-semibold text-sage text-lg">£{service?.price}</span>
-            </div>
+            {referralCode && referralDiscount ? (
+              <>
+                <div className="flex items-center justify-between">
+                  <span className="text-graphite/70">Original Price:</span>
+                  <span className="font-medium text-graphite line-through">£{originalPrice}</span>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg -mx-2 px-5">
+                  <div>
+                    <span className="text-purple-700 font-medium">Referral Discount:</span>
+                    <p className="text-xs text-purple-600">Code: {referralCode}</p>
+                  </div>
+                  <span className="font-semibold text-purple-600">-£{discountAmount.toFixed(2)}</span>
+                </div>
+                <div className="flex items-center justify-between pt-3 border-t border-sage/20">
+                  <span className="text-graphite font-medium">Total Price:</span>
+                  <span className="font-bold text-sage text-2xl">£{finalPrice.toFixed(2)}</span>
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center justify-between">
+                <span className="text-graphite/70">Price:</span>
+                <span className="font-semibold text-sage text-lg">£{service?.price}</span>
+              </div>
+            )}
             {service?.requiresDeposit && (
               <div className="pt-3 border-t border-sage/20">
                 <div className="flex items-center justify-between">

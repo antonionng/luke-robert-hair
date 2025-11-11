@@ -55,7 +55,7 @@ export default function LocationSelector({ onSelectLocation }: LocationSelectorP
           Where would you like to book?
         </h2>
         <p className="text-lg text-graphite/70">
-          Luke works at multiple locations across Cheshire
+          Luke works at multiple locations across Cheshire and Berkshire
         </p>
       </motion.div>
 

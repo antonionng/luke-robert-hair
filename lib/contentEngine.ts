@@ -11,6 +11,7 @@
 import OpenAI from 'openai';
 import { db, supabase, Database } from './supabase';
 import { slugify } from './utils';
+import { getNextBrandImage, trackImageUsage } from './imageRotation';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -36,6 +37,7 @@ interface GenerateBlogPostOptions {
   scheduledFor?: Date | null;
   requestedBy?: string | null;
   metadata?: Record<string, any>;
+  useBrandImage?: boolean; // Whether to use brand images or AI-generated images
 }
 
 interface ManualContentRequestInput {
@@ -56,6 +58,7 @@ interface ManualContentRequestInput {
   autoPublish?: boolean;
   priority?: number;
   metadata?: Record<string, any>;
+  useBrandImage?: boolean; // Whether to use brand images or AI-generated images
 }
 
 interface TopicSuggestionOptions {
@@ -414,7 +417,10 @@ Please correct these issues:
       
       console.log(`🔄 Retrying generation with validation feedback...`);
     }
-    const image = await generateContentImage(aiContent!.title, category!, aiContent!.imagePrompt);
+    
+    // Determine if brand images should be used (default to true)
+    const useBrandImage = options.useBrandImage ?? request?.metadata?.useBrandImage ?? true;
+    const image = await generateContentImage(aiContent!.title, category!, aiContent!.imagePrompt, useBrandImage);
 
     const wordCount = computeWordCount(aiContent!.body);
     const readingTime = estimateReadingTimeMinutes(wordCount);
@@ -857,7 +863,7 @@ TOPIC: ${topic}
 CATEGORY: ${category}
 SOURCE MODE: ${context.source}
 
-AUDIENCE: ${context.targetAudience || (category === 'Education Insights' ? 'Professional stylists seeking advanced education' : category === 'Product Highlights' ? 'Stylists and discerning clients evaluating premium products' : 'Salon clients who want healthy, precision cuts that last')}
+AUDIENCE: ${context.targetAudience || (category === 'Education Insights' ? 'Professional stylists seeking advanced education' : category === 'Product Highlights' ? 'Stylists and discerning clients evaluating premium products' : 'Salon clients who want healthy, precision haircuts that last')}
 
 TIME CONTEXT
 - Month: ${context.currentMonth}
@@ -1010,18 +1016,14 @@ OUTPUT STRICTLY AS JSON:
 }
 
 /**
- * Generate featured image using DALL-E
+ * Generate or select featured image (brand image with rotation or DALL-E)
  */
 async function generateContentImage(
   title: string,
   category: ContentCategory,
-  customPrompt?: string
+  customPrompt?: string,
+  useBrandImage: boolean = true
 ): Promise<ContentImageResult> {
-  // Use Lorem Picsum for reliable free placeholder images
-  // Format: https://picsum.photos/width/height?random=seed
-  const seed = encodeURIComponent(title.slice(0, 20).replace(/\s+/g, '-'));
-  const fallbackUrl = `https://picsum.photos/seed/${seed}/1200/630`;
-
   // Build hair-focused default prompt emphasizing cutting/styling action
   const hairActionContext = category.toLowerCase().includes('education') 
     ? 'professional hairdresser demonstrating precision cutting technique to student in modern salon'
@@ -1035,9 +1037,38 @@ async function generateContentImage(
     ? `${customPrompt} | Style: Professional hair cutting/styling/barbering scene in action | Palette: sage green and off-white | Mood: premium editorial salon with stylist working` 
     : defaultPrompt;
 
+  // Try to use brand images first if requested
+  if (useBrandImage) {
+    try {
+      const brandImagePath = await getNextBrandImage(category);
+      
+      if (brandImagePath) {
+        // Track usage of this image
+        await trackImageUsage(brandImagePath);
+        
+        console.log(`✅ Using brand image: ${brandImagePath} for category: ${category}`);
+        
+        return {
+          url: brandImagePath,
+          prompt: `Brand image from ${category} collection`,
+          alt: `${category} - ${title}`,
+          caption: `Professional ${category.toLowerCase()} photography from Luke Robert Hair`,
+        };
+      } else {
+        console.log(`⚠️ No brand images available for ${category}, falling back to DALL-E`);
+      }
+    } catch (error) {
+      console.error('Error selecting brand image:', error);
+      console.log('Falling back to DALL-E generation');
+    }
+  }
+
+  // If brand images aren't used or available, generate with DALL-E
   if (process.env.DALL_E_ENABLED !== 'true') {
+    console.warn('DALL-E is not enabled. Please enable DALL-E or add brand images.');
+    // Return a basic fallback (could be a default brand image if needed)
     return {
-      url: fallbackUrl,
+      url: '/images/education-placeholder.svg', // Use existing placeholder as last resort
       prompt,
       alt: `Editorial salon image representing ${title}`,
       caption: `Photography inspired by ${category.toLowerCase()} insights from Luke Robert Hair`,
@@ -1045,6 +1076,7 @@ async function generateContentImage(
   }
 
   try {
+    console.log(`🎨 Generating DALL-E image for: ${title}`);
     const response = await openai.images.generate({
       model: 'dall-e-3',
       prompt,
@@ -1053,18 +1085,25 @@ async function generateContentImage(
       n: 1,
     });
 
-    const url = response.data?.[0]?.url || fallbackUrl;
+    const url = response.data?.[0]?.url;
+
+    if (!url) {
+      throw new Error('DALL-E did not return an image URL');
+    }
+
+    console.log(`✅ Generated DALL-E image successfully`);
 
     return {
       url,
       prompt,
-      alt: `Editorial salon image representing ${title}`,
+      alt: `AI-generated editorial salon image representing ${title}`,
       caption: `Visual interpretation of ${title} for the ${category.toLowerCase()} series`,
     };
   } catch (error) {
     console.error('DALL-E error:', error);
+    // Final fallback to existing placeholder
     return {
-      url: fallbackUrl,
+      url: '/images/education-placeholder.svg',
       prompt,
       alt: `Editorial salon image representing ${title}`,
       caption: `Photography inspired by ${category.toLowerCase()} insights from Luke Robert Hair`,
@@ -1137,6 +1176,7 @@ export async function createManualContentRequest(input: ManualContentRequestInpu
       ...(input.metadata || {}),
       created_via: 'admin_manual',
       created_at: now,
+      useBrandImage: input.useBrandImage ?? true,
     },
   };
 

@@ -4,11 +4,35 @@ import { Users, Award, Zap, HeartHandshake, MessageSquare } from 'lucide-react';
 import CPDCourseCard from '@/components/CPDCourseCard';
 import HowItWorksTimeline from '@/components/HowItWorksTimeline';
 import CPDEnquiryForm from '@/components/CPDEnquiryForm';
+import StructuredData from '@/components/StructuredData';
 import { cpdCourses } from '@/lib/data/cpdCourses';
+import { 
+  generateCourseSchema,
+  generateBreadcrumbs,
+  siteConfig,
+} from '@/lib/seo';
 
 export default function CPDPartnershipsPage() {
   return (
     <main className="min-h-screen bg-off-white">
+      {/* Structured Data for SEO */}
+      <StructuredData 
+        data={[
+          ...cpdCourses.map(course => 
+            generateCourseSchema({
+              name: course.title,
+              description: course.description,
+              provider: siteConfig.name,
+              duration: course.duration,
+            })
+          ),
+          generateBreadcrumbs([
+            { name: 'Home', url: '/' },
+            { name: 'CPD Partnerships', url: '/cpd-partnerships' },
+          ]),
+        ]} 
+      />
+
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-sage/10 via-off-white to-pale-sage/20 pt-32 pb-24 overflow-hidden">
         {/* Decorative Elements */}
@@ -25,13 +49,13 @@ export default function CPDPartnershipsPage() {
 
             {/* Headline */}
             <h1 className="font-playfair text-5xl md:text-6xl lg:text-7xl text-graphite mb-6 leading-tight">
-              Empowering Hair & Beauty Students Through{' '}
+              Empowering Hairdressing & Barbering Students and Lecturers Through{' '}
               <span className="text-sage">Accredited CPD Training</span>
             </h1>
 
             {/* Subtext */}
             <p className="text-xl text-gray-700 leading-relaxed mb-10">
-              Partner with us to deliver inspiring, accredited CPD courses in communication, coaching, and leadership for your hair and beauty college students and staff.
+              Partner with us to deliver inspiring, accredited CPD courses in communication, coaching, and leadership for your hairdressing and barbering college students and staff.
             </p>
 
             {/* CTAs */}
@@ -48,7 +72,7 @@ export default function CPDPartnershipsPage() {
             <div className="mt-12 flex flex-wrap items-center justify-center gap-8 text-sm text-gray-600">
               <div className="flex items-center gap-2">
                 <Users className="w-5 h-5 text-sage" />
-                <span>300+ Hair & Beauty Students Trained</span>
+                <span>300+ Hairdressing & Barbering Students Trained</span>
               </div>
               <div className="flex items-center gap-2">
                 <Award className="w-5 h-5 text-sage" />
@@ -72,7 +96,7 @@ export default function CPDPartnershipsPage() {
                 Why Partner With Us?
               </h2>
               <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
-                Specializing in hair and beauty education, I bring engaging, evidence-based programmes that equip your students with essential communication, coaching, and leadership skills—enhancing their employability and preparing them for successful careers in the industry.
+                Specializing in hairdressing and barbering education, I bring engaging, evidence-based programmes that equip your students with essential communication, coaching, and leadership skills—enhancing their employability and preparing them for successful careers in the salon and barbershop industry.
               </p>
             </div>
 
@@ -164,7 +188,7 @@ export default function CPDPartnershipsPage() {
             </h2>
             <p className="text-xl text-gray-700 leading-relaxed mb-10">
               Let me help you choose. I've built an AI assistant that understands 
-              your hair and beauty college's needs. Tell it about your student demographics and 
+              your hairdressing and barbering college's needs. Tell it about your student demographics and 
               goals, and it will recommend the perfect CPD programme.
             </p>
             <button
@@ -219,7 +243,7 @@ export default function CPDPartnershipsPage() {
 
               <div className="text-center">
                 <p className="font-semibold text-lg text-graphite">Sarah Mitchell</p>
-                <p className="text-gray-600">Head of Personal Development, Cheshire College of Hair & Beauty</p>
+                <p className="text-gray-600">Head of Personal Development, Cheshire College of Hairdressing & Barbering</p>
               </div>
             </div>
           </div>
@@ -235,7 +259,7 @@ export default function CPDPartnershipsPage() {
                 Start Your Partnership Journey
               </h2>
               <p className="text-xl text-gray-700 leading-relaxed">
-                Let's discuss how we can bring transformational CPD training to your hair and beauty students. 
+                Let's discuss how we can bring transformational CPD training to your hairdressing and barbering students. 
                 Fill in the form below and we'll be in touch within 24 hours.
               </p>
             </div>
@@ -254,7 +278,7 @@ export default function CPDPartnershipsPage() {
             Ready to Empower Your Students?
           </h2>
           <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-            Join the hair and beauty colleges already partnering with us to deliver outstanding CPD training.
+            Join the hairdressing and barbering colleges already partnering with us to deliver outstanding CPD training.
           </p>
           <a
             href="#enquiry-form"

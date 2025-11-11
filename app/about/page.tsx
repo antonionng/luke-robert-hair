@@ -4,10 +4,23 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Award, Scissors, GraduationCap, Heart } from 'lucide-react';
+import StructuredData from '@/components/StructuredData';
+import { generatePersonSchema, generateBreadcrumbs } from '@/lib/seo';
 
 export default function AboutPage() {
   return (
     <div className="pt-20">
+      {/* Structured Data for SEO */}
+      <StructuredData 
+        data={[
+          generatePersonSchema(),
+          generateBreadcrumbs([
+            { name: 'Home', url: '/' },
+            { name: 'About', url: '/about' },
+          ]),
+        ]} 
+      />
+
       {/* Hero Section */}
       <section className="section-padding bg-white">
         <div className="container-custom">
@@ -19,7 +32,7 @@ export default function AboutPage() {
             >
               <h1 className="text-4xl lg:text-5xl leading-tight">15 Years of Precision. 500+ Stylists Trained.</h1>
               <p className="text-xl text-sage font-medium">
-                L'Oréal Professional Ambassador. Educator. Master Cutter.
+                Educator. Master Cutter. UK & Ireland
               </p>
               <p className="text-lg text-graphite/70 leading-relaxed">
                 I have spent 15 years perfecting my craft - understanding the geometry, the movement, the structure 
@@ -67,8 +80,8 @@ export default function AboutPage() {
                 desc: 'I teach foundations that work on every client, every time. Your reputation depends on consistency, not luck.',
               },
               {
-                title: 'Wearable, Not Just Beautiful',
-                desc: 'I create styles that work with your life, not against it. A great cut should last 8-10 weeks.',
+                title: 'Creating Beautiful, Wearable Hair',
+                desc: 'Every cut I create must be both stunning to look at and practical to live with. Beautiful hair that works in real life - that is the standard.',
               },
               {
                 title: 'Teaching is My Legacy',
@@ -133,7 +146,7 @@ export default function AboutPage() {
               {
                 year: '2019',
                 title: 'Opened My Salon',
-                desc: 'Took the leap. Opened my own place where I could do things my way - precision cuts, honest advice, no gimmicks.',
+                desc: 'Took the leap. Opened my own place where I could do things my way - precision haircuts, honest advice, no gimmicks.',
               },
               {
                 year: '2020',
@@ -211,16 +224,16 @@ export default function AboutPage() {
             className="text-center space-y-8"
           >
             <div>
-              <h2 className="mb-2">Trusted By Industry Leaders</h2>
-              <p className="text-graphite/60">
-                Proud L'Oréal Professional Ambassador
-              </p>
+              <h2 className="mb-2">Trusted By Industry Leading Brands</h2>
             </div>
             <div className="flex flex-wrap justify-center items-center gap-12">
               {[
+                { name: 'GS Education', image: '/images/brands/gs-education.png' },
                 { name: "L'ORÉAL PROFESSIONNEL", image: '/images/brands/loreal.png' },
-                { name: 'REDKEN', image: '/images/brands/redken.png' },
-                { name: 'WELLA', image: '/images/brands/wella.png' },
+                { name: 'SACO', image: '/images/brands/saco.png' },
+                { name: 'Wings', image: '/images/brands/wings.png' },
+                { name: 'Yoi Scissors', image: '/images/brands/yoi-scissors.png' },
+                { name: 'Ibiza Brushes', image: '/images/brands/ibiza-brushes.png' },
               ].map((brand, index) => (
                 <motion.div
                   key={brand.name}

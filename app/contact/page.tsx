@@ -2,7 +2,10 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
+import StructuredData from '@/components/StructuredData';
+import { generateBreadcrumbs } from '@/lib/seo';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -55,6 +58,16 @@ export default function ContactPage() {
 
   return (
     <div className="pt-20">
+      {/* Structured Data for SEO */}
+      <StructuredData 
+        data={[
+          generateBreadcrumbs([
+            { name: 'Home', url: '/' },
+            { name: 'Contact', url: '/contact' },
+          ]),
+        ]} 
+      />
+
       {/* Hero Section */}
       <section className="py-16 bg-white">
         <div className="container-custom max-w-4xl">
@@ -278,24 +291,24 @@ export default function ContactPage() {
                 <p className="text-graphite/70">
                   Ready to experience precision cutting? Book your appointment online now.
                 </p>
-                <a
+                <Link
                   href="/book"
                   className="inline-block px-8 py-3 bg-sage text-white rounded-full font-medium hover:bg-sage-dark transition-all"
                 >
                   Book Now
-                </a>
+                </Link>
               </div>
               <div className="bg-white p-8 rounded-2xl shadow-sm text-center space-y-4">
                 <h3 className="text-xl font-semibold">Explore Courses</h3>
                 <p className="text-graphite/70">
                   Interested in professional training? View our education programs.
                 </p>
-                <a
+                <Link
                   href="/education"
                   className="inline-block px-8 py-3 bg-sage text-white rounded-full font-medium hover:bg-sage-dark transition-all"
                 >
                   View Courses
-                </a>
+                </Link>
               </div>
             </div>
           </motion.div>

@@ -9,6 +9,8 @@ import { formatDate } from '@/lib/utils';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useParams } from 'next/navigation';
+import StructuredData from '@/components/StructuredData';
+import { siteConfig } from '@/lib/seo';
 
 export default function BlogPostPage() {
   const params = useParams();
@@ -126,8 +128,45 @@ export default function BlogPostPage() {
     );
   }
 
+  // Generate Article structured data
+  const articleSchema = post ? {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: post.title,
+    description: post.excerpt,
+    image: post.image_url || `${siteConfig.url}${siteConfig.ogImage}`,
+    datePublished: post.published_at,
+    dateModified: post.updated_at || post.published_at,
+    author: {
+      '@type': 'Person',
+      name: 'Luke Robert',
+      url: siteConfig.url,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: siteConfig.name,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${siteConfig.url}/logo-white.png`,
+      },
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `${siteConfig.url}/insights/${slug}`,
+    },
+    articleSection: post.category,
+    keywords: post.insight_tags?.join(', ') || '',
+    wordCount: post.content?.split(' ').length || 0,
+    ...(post.reading_time_minutes && {
+      timeRequired: `PT${post.reading_time_minutes}M`,
+    }),
+  } : null;
+
   return (
     <div className="pt-20">
+      {/* Structured Data for SEO */}
+      {articleSchema && <StructuredData data={articleSchema} />}
+
       {/* Hero Section */}
       <section className="section-padding bg-sage-pale/30">
         <div className="container-custom max-w-4xl">

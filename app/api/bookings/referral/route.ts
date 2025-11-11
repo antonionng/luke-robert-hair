@@ -187,6 +187,25 @@ export async function POST(request: NextRequest) {
       // Don't fail the entire request if email fails
     }
 
+    // Send admin notification (high priority - immediate alert)
+    try {
+      const { sendAdminNotification } = await import('@/lib/email');
+      await sendAdminNotification('salon_referral', {
+        contactName: `${firstName} ${lastName}`,
+        email,
+        phone,
+        salonName: salonInfo.name,
+        salonCity: salonInfo.city,
+        serviceInterest,
+        preferredDate,
+        leadId,
+      });
+      console.log('✅ Admin notification sent for salon referral');
+    } catch (emailError) {
+      console.error('⚠️ Failed to send admin notification:', emailError);
+      // Don't fail the entire request if email fails
+    }
+
     return NextResponse.json({
       success: true,
       leadId,

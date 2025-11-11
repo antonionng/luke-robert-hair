@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Sparkles, Calendar, Target, Tag, Link2, FileText } from 'lucide-react';
+import { X, Sparkles, Calendar, Target, Tag, Link2, FileText, Image } from 'lucide-react';
 
 interface ContentCreationModalProps {
   isOpen: boolean;
@@ -30,6 +30,7 @@ export default function ContentCreationModal({
     preferredPublishDate: '',
     autoPublish: false,
     priority: 3,
+    useBrandImage: true,
   });
 
   const [objectiveInput, setObjectiveInput] = useState('');
@@ -63,6 +64,7 @@ export default function ContentCreationModal({
         preferredPublishDate: '',
         autoPublish: false,
         priority: 3,
+        useBrandImage: true,
       });
     } catch (error) {
       console.error('Failed to create content request:', error);
@@ -379,6 +381,55 @@ export default function ContentCreationModal({
               rows={2}
               placeholder="Any other details or requirements..."
             />
+          </div>
+
+          {/* Image Source Selection */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              <Image className="w-4 h-4 inline mr-1" />
+              Featured Image Source
+            </label>
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, useBrandImage: true })}
+                className={`p-4 border-2 rounded-lg transition-all ${
+                  formData.useBrandImage
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    : 'border-gray-300 hover:border-gray-400'
+                }`}
+              >
+                <div className="flex flex-col items-center gap-2">
+                  <Image className="w-6 h-6" />
+                  <span className="font-medium">Brand Images</span>
+                  <span className="text-xs text-gray-600 text-center">
+                    Use on-brand photography from your image library
+                  </span>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, useBrandImage: false })}
+                className={`p-4 border-2 rounded-lg transition-all ${
+                  !formData.useBrandImage
+                    ? 'border-purple-500 bg-purple-50 text-purple-700'
+                    : 'border-gray-300 hover:border-gray-400'
+                }`}
+              >
+                <div className="flex flex-col items-center gap-2">
+                  <Sparkles className="w-6 h-6" />
+                  <span className="font-medium">AI Generated</span>
+                  <span className="text-xs text-gray-600 text-center">
+                    Generate custom image with DALL-E
+                  </span>
+                </div>
+              </button>
+            </div>
+            {formData.useBrandImage && (
+              <p className="mt-2 text-sm text-gray-500">
+                Images will be automatically rotated from your {formData.category.toLowerCase().includes('education') ? 'education' : 'hair-styling'} collection.
+              </p>
+            )}
           </div>
 
           {/* Scheduling */}

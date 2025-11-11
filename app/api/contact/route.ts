@@ -89,6 +89,21 @@ export async function POST(request: NextRequest) {
       automated: false,
     });
 
+    // Send user acknowledgment email
+    try {
+      const { sendTransactionalEmail } = await import('@/lib/email');
+      await sendTransactionalEmail({
+        leadId: newLead.id,
+        templateName: 'contact_acknowledgment',
+        to: newLead.email,
+        toName: `${firstName} ${lastName}`,
+      });
+      console.log('✅ [CONTACT API] Acknowledgment email sent to user');
+    } catch (emailError) {
+      console.error('⚠️ [CONTACT API] Failed to send acknowledgment email:', emailError);
+      // Don't fail the entire request if email fails
+    }
+
     return NextResponse.json({ 
       success: true, 
       message: 'Contact form submitted successfully',

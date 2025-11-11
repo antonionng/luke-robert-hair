@@ -5,7 +5,9 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Calendar, Tag, Star, Pin } from 'lucide-react';
+import StructuredData from '@/components/StructuredData';
 import { formatDate } from '@/lib/utils';
+import { generateBreadcrumbs } from '@/lib/seo';
 
 interface InsightPost {
   id: string;
@@ -69,6 +71,16 @@ export default function InsightsPage() {
 
   return (
     <div className="pt-20">
+      {/* Structured Data for SEO */}
+      <StructuredData 
+        data={[
+          generateBreadcrumbs([
+            { name: 'Home', url: '/' },
+            { name: 'Insights', url: '/insights' },
+          ]),
+        ]} 
+      />
+
       {/* Hero Section */}
       <section className="section-padding bg-sage-pale/30">
         <div className="container-custom">

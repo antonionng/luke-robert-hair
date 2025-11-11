@@ -8,7 +8,14 @@ import { ArrowRight, Scissors, GraduationCap, BookOpen, Award, Users, MapPin } f
 import ServiceCard from '@/components/ServiceCard';
 import TestimonialCard from '@/components/TestimonialCard';
 import InsightCard from '@/components/InsightCard';
+import ReferralBanner from '@/components/referral/ReferralBanner';
+import StructuredData from '@/components/StructuredData';
 import { services, testimonials } from '@/lib/data';
+import { 
+  generateOrganizationSchema, 
+  generatePersonSchema, 
+  generateBreadcrumbs 
+} from '@/lib/seo';
 
 interface InsightPost {
   id: string;
@@ -48,6 +55,17 @@ export default function Home() {
   };
   return (
     <div className="pt-20">
+      {/* Structured Data for SEO */}
+      <StructuredData 
+        data={[
+          generateOrganizationSchema(),
+          generatePersonSchema(),
+          generateBreadcrumbs([
+            { name: 'Home', url: '/' },
+          ]),
+        ]} 
+      />
+
       {/* Hero Section */}
       <section className="section-padding min-h-[90vh] flex items-center pt-32">
         <div className="container-custom">
@@ -60,7 +78,7 @@ export default function Home() {
               className="space-y-8"
             >
               <h1 className="text-balance font-display">
-                Precision Cuts.
+                Precision Haircuts.
                 <br />
                 <span className="text-sage">Powerful Results.</span>
               </h1>
@@ -90,7 +108,7 @@ export default function Home() {
                 </div>
                 <div className="flex items-center gap-2 text-graphite/70">
                   <MapPin className="text-sage" size={20} />
-                  <span className="text-sm font-medium">Altrincham, Knutsford & Reading</span>
+                  <span className="text-sm font-medium">Cheshire & Berkshire</span>
                 </div>
               </div>
             </motion.div>
@@ -113,6 +131,54 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Trusted Brands Section */}
+      <section className="py-12 bg-white border-y border-sage/10">
+        <div className="container-custom">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center"
+          >
+            <p className="text-sm text-graphite/60 uppercase tracking-wide mb-8">Trusted By Industry Leading Brands</p>
+            <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12">
+              {[
+                { name: 'GS Education', image: '/images/brands/gs-education.png' },
+                { name: "L'ORÉAL PROFESSIONNEL", image: '/images/brands/loreal.png' },
+                { name: 'SACO', image: '/images/brands/saco.png' },
+                { name: 'Wings', image: '/images/brands/wings.png' },
+                { name: 'Yoi Scissors', image: '/images/brands/yoi-scissors.png' },
+                { name: 'Ibiza Brushes', image: '/images/brands/ibiza-brushes.png' },
+              ].map((brand, index) => (
+                <motion.div
+                  key={brand.name}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.05 }}
+                  className="relative w-32 h-12 flex items-center justify-center grayscale hover:grayscale-0 transition-all duration-300 opacity-60 hover:opacity-100"
+                >
+                  <Image
+                    src={brand.image}
+                    alt={`${brand.name} logo`}
+                    fill
+                    className="object-contain"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const parent = target.parentElement;
+                      if (parent) {
+                        parent.innerHTML = `<span class="text-xs font-semibold text-graphite/60">${brand.name}</span>`;
+                      }
+                    }}
+                  />
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Salon Services Section */}
       <section className="section-padding bg-gradient-to-br from-salon-light/20 to-white relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-salon/5 rounded-full blur-3xl"></div>
@@ -129,7 +195,7 @@ export default function Home() {
             </div>
             <h2 className="mb-6 text-salon-dark">Precision That Transforms</h2>
             <p className="text-xl text-graphite/70 max-w-2xl mx-auto">
-              Your hair is your signature. I craft cuts that move with you, styles that last, and confidence that shows. Every client gets my full attention and expertise.
+              Your hair is your signature. I craft haircuts that move with you, styles that last, and confidence that shows. Every client gets my full attention and expertise.
             </p>
           </motion.div>
 
@@ -236,6 +302,13 @@ export default function Home() {
               />
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Referral Banner */}
+      <section className="section-padding bg-white">
+        <div className="container-custom">
+          <ReferralBanner />
         </div>
       </section>
 

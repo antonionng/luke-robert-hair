@@ -40,7 +40,7 @@ export interface Booking {
   id: string;
   contactId: string;
   service: string;
-  location: 'Cheshire' | 'Oxford';
+  location: 'Cheshire' | 'Berkshire';
   date: Date;
   status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
   notes?: string;
@@ -76,4 +76,129 @@ export interface Testimonial {
   text: string;
   location: string;
   rating: number;
+}
+
+// ============================================================================
+// REFERRAL SYSTEM TYPES
+// ============================================================================
+
+export interface ReferralCode {
+  id: string;
+  code: string;
+  referrer_email: string;
+  referrer_name: string;
+  referrer_phone?: string | null;
+  status: 'active' | 'expired' | 'disabled';
+  created_at: string;
+  expires_at?: string | null;
+  total_uses: number;
+  max_uses: number;
+  discount_type: 'fixed' | 'percentage';
+  discount_value: number;
+  notes?: string | null;
+  last_used_at?: string | null;
+}
+
+export interface ReferralRedemption {
+  id: string;
+  referral_code_id: string;
+  referee_email: string;
+  referee_name: string;
+  referee_phone?: string | null;
+  booking_id?: string | null;
+  lead_id?: string | null;
+  redeemed_at: string;
+  booking_completed: boolean;
+  booking_completed_at?: string | null;
+  referee_discount_amount?: number | null;
+  referrer_credit_amount?: number | null;
+  redemption_source: string;
+  ip_address?: string | null;
+  user_agent?: string | null;
+}
+
+export interface ReferralLeaderboard {
+  id: string;
+  code: string;
+  referrer_name: string;
+  referrer_email: string;
+  total_uses: number;
+  max_uses: number;
+  status: string;
+  created_at: string;
+  total_redemptions: number;
+  completed_bookings: number;
+  total_discounts_given: number;
+  total_credits_earned: number;
+  conversion_rate: number;
+}
+
+// API Request/Response Types
+export interface GenerateReferralRequest {
+  email: string;
+  name: string;
+  phone?: string;
+}
+
+export interface GenerateReferralResponse {
+  success: boolean;
+  code?: string;
+  shareUrl?: string;
+  shareText?: string;
+  error?: string;
+}
+
+export interface ValidateReferralRequest {
+  code: string;
+  email: string;
+}
+
+export interface ValidateReferralResponse {
+  valid: boolean;
+  discount?: {
+    type: 'fixed' | 'percentage';
+    value: number;
+    formatted: string; // e.g., "£10 off" or "10% off"
+  };
+  message: string;
+  referralCode?: ReferralCode;
+}
+
+export interface ApplyReferralRequest {
+  code: string;
+  bookingId?: string;
+  email: string;
+  name: string;
+  phone?: string;
+}
+
+export interface ApplyReferralResponse {
+  success: boolean;
+  redemptionId?: string;
+  discount?: {
+    amount: number;
+    type: 'fixed' | 'percentage';
+  };
+  error?: string;
+}
+
+export interface ReferralStatsResponse {
+  success: boolean;
+  stats?: {
+    code: string;
+    totalUses: number;
+    maxUses: number;
+    remainingUses: number;
+    totalRedemptions: number;
+    completedBookings: number;
+    pendingBookings: number;
+    totalCreditsEarned: number;
+    conversionRate: number;
+  };
+  recentRedemptions?: Array<{
+    refereeName: string;
+    redeemedAt: string;
+    bookingCompleted: boolean;
+  }>;
+  error?: string;
 }

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { 
   LayoutDashboard, Calendar, Users, GraduationCap, Building2, 
   MessageSquare, Settings, LogOut, ChevronLeft, ChevronRight,
-  TrendingUp, FileText, Sparkles
+  TrendingUp, FileText, Sparkles, Gift
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -29,6 +29,7 @@ export default function AdminSidebar({ activeTab, onTabChange, onLogout, stats }
     { id: 'leads', label: 'Stylist Training', icon: GraduationCap, count: stats?.activeLeads },
     { id: 'cpd', label: 'College Partnerships', icon: Building2, count: stats?.cpdPartnerships },
     { id: 'chat', label: 'Chat Sessions', icon: MessageSquare, count: stats?.chatSessions },
+    { id: 'referrals', label: 'Referrals', icon: Gift, count: null },
     { id: 'content', label: 'Content Engine', icon: Sparkles, count: null },
     { id: 'services', label: 'Services', icon: Settings, count: null },
   ];

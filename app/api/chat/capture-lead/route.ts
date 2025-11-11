@@ -60,6 +60,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Send admin notification for AI chat lead (high priority - immediate alert)
+    try {
+      const { sendAdminNotification } = await import('@/lib/email');
+      await sendAdminNotification('ai_chat_lead', {
+        contactName: name,
+        email,
+        phone,
+        institution: extractedInfo?.institution,
+        conversationSummary,
+        extractedInfo,
+        leadId: data.leadId,
+      });
+      console.log('✅ [AI CHAT] Admin notification sent for AI chat lead');
+    } catch (emailError) {
+      console.error('⚠️ [AI CHAT] Failed to send admin notification:', emailError);
+      // Don't fail the entire request if email fails
+    }
+
     return NextResponse.json({ 
       success: true, 
       leadId: data.leadId,

@@ -6,11 +6,30 @@ import Image from 'next/image';
 import { MapPin, MessageCircle } from 'lucide-react';
 import ServiceCard from '@/components/ServiceCard';
 import TestimonialCard from '@/components/TestimonialCard';
+import StructuredData from '@/components/StructuredData';
 import { services, testimonials } from '@/lib/data';
+import { 
+  generateOrganizationSchema,
+  generateLocalBusinessSchema,
+  generateBreadcrumbs,
+  siteConfig,
+} from '@/lib/seo';
 
 export default function SalonPage() {
   return (
     <div className="pt-20">
+      {/* Structured Data for SEO */}
+      <StructuredData 
+        data={[
+          generateOrganizationSchema(),
+          ...siteConfig.locations.map(loc => generateLocalBusinessSchema(loc)),
+          generateBreadcrumbs([
+            { name: 'Home', url: '/' },
+            { name: 'Salon Services', url: '/salon' },
+          ]),
+        ]} 
+      />
+
       {/* Hero Section */}
       <section className="section-padding bg-sage-pale/30">
         <div className="container-custom">
@@ -26,7 +45,7 @@ export default function SalonPage() {
             </p>
             <p className="text-lg text-graphite/60 leading-relaxed">
               I believe every haircut should work as hard as you do. That's why I focus on creating styles that look 
-              great today and still turn heads 8 weeks from now. No high-maintenance cuts that fall apart after one wash - 
+              great today and still turn heads 8 weeks from now. No high-maintenance haircuts that fall apart after one wash - 
               just precision work that moves with you.
             </p>
           </motion.div>
@@ -84,7 +103,7 @@ export default function SalonPage() {
         </div>
       </section>
 
-      {/* Before/After Gallery */}
+      {/* Gallery - Haircuts Showcase */}
       <section className="section-padding bg-sage-pale/30">
         <div className="container-custom">
           <motion.div
@@ -93,18 +112,21 @@ export default function SalonPage() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="mb-6">Recent Work</h2>
+            <h2 className="mb-6">Precision Haircuts Gallery</h2>
             <p className="text-xl text-graphite/70 max-w-2xl mx-auto">
-              Every client is different. Here's a glimpse of the transformations I've created recently - 
-              each one tailored to the individual, their lifestyle, and how they want to feel.
+              Every haircut tells a story. From classic bobs to modern layered styles, each cut is crafted with precision 
+              and designed to last. Here's a showcase of my work - all haircuts that move beautifully and grow out gracefully.
             </p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { id: 1, src: '/images/transformations/tranformation-1.png', alt: 'Luke Robert Hair transformation 1' },
-              { id: 2, src: '/images/transformations/tranformation-2.png', alt: 'Luke Robert Hair transformation 2' },
-              { id: 3, src: '/images/transformations/tranformation-3.png', alt: 'Luke Robert Hair transformation 3' }
+              { id: 1, src: '/images/gallery/haircut-1.png', alt: 'Luke Robert Hair - Precision haircut showcase 1' },
+              { id: 2, src: '/images/gallery/haircut-2.png', alt: 'Luke Robert Hair - Precision haircut showcase 2' },
+              { id: 3, src: '/images/gallery/haircut-3.png', alt: 'Luke Robert Hair - Precision haircut showcase 3' },
+              { id: 4, src: '/images/gallery/haircut-4.png', alt: 'Luke Robert Hair - Precision haircut showcase 4' },
+              { id: 5, src: '/images/gallery/haircut-5.png', alt: 'Luke Robert Hair - Precision haircut showcase 5' },
+              { id: 6, src: '/images/gallery/haircut-6.png', alt: 'Luke Robert Hair - Precision haircut showcase 6' }
             ].map((item, index) => (
               <motion.div
                 key={item.id}
