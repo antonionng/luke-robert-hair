@@ -229,7 +229,6 @@ export default function AboutPage() {
             <div className="flex flex-wrap justify-center items-center gap-12">
               {[
                 { name: 'GS Education', image: '/images/brands/gs-education.png' },
-                { name: "L'ORÉAL PROFESSIONNEL", image: '/images/brands/loreal.png' },
                 { name: 'SACO', image: '/images/brands/saco.png' },
                 { name: 'Wings', image: '/images/brands/wings.png' },
                 { name: 'Yoi Scissors', image: '/images/brands/yoi-scissors.png' },

@@ -38,7 +38,7 @@ export default function ReferralBanner() {
 
               <p className="text-lg text-purple-100">
                 Give your friends £10 off their first appointment and get £10 off yours when they book. 
-                It's our way of saying thank you for spreading the word.
+                It's my way of saying thank you for spreading the word.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">

@@ -37,7 +37,7 @@ const FROM_EMAIL = process.env.FROM_EMAIL || 'Luke Robert Hair <hello@lukerobert
 const REPLY_TO = process.env.REPLY_TO_EMAIL || 'hello@lukeroberthair.com';
 
 // Admin notification configuration
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'hello@lukeroberthair.com'; // Luke's email for notifications
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'ag@experrt.com'; // Owner email for all notifications
 const ADMIN_NOTIFICATIONS_ENABLED = process.env.ADMIN_NOTIFICATION_ENABLED !== 'false'; // Default true
 
 type EmailType = Database['public']['Tables']['email_logs']['Row']['email_type'];
@@ -1717,7 +1717,7 @@ export async function sendReferralCodeEmail(params: {
               </p>
 
               <p style="margin: 0 0 32px 0; font-family: system-ui, -apple-system, sans-serif; font-size: 16px; line-height: 1.6; color: #2C2C2C;">
-                Thank you for joining the referral program! When your friends use your code, <strong>you both get £10 off</strong> your next appointment. It's our way of saying thank you for spreading the word.
+                Thank you for joining the referral program! When your friends use your code, <strong>you both get £10 off</strong> your next appointment. It's my way of saying thank you for spreading the word.
               </p>
 
               <!-- Referral Code Display -->

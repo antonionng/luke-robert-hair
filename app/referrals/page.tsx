@@ -136,7 +136,7 @@ export default function ReferralsPage() {
           >
             <h2 className="mb-6">How It Works</h2>
             <p className="text-xl text-graphite/70 max-w-2xl mx-auto">
-              Sharing the love is simple. Here&apos;s how our referral program works.
+              Sharing the love is simple. Here&apos;s how my referral program works.
             </p>
           </motion.div>
 

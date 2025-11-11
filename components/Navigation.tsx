@@ -34,8 +34,8 @@ export default function Navigation() {
         scrolled ? 'bg-offwhite/95 backdrop-blur-sm shadow-sm' : 'bg-transparent'
       }`}
     >
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between h-20 px-6 md:px-12 lg:px-24">
+      <div className="max-w-[1600px] mx-auto">
+        <div className="flex items-center justify-between h-20 px-6 md:px-8 lg:px-16">
           {/* Logo */}
           <Link href="/" className="flex items-center -ml-1">
             <div className="relative w-24 h-10">
@@ -50,28 +50,32 @@ export default function Navigation() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm font-medium tracking-wide hover:text-sage transition-colors"
+                className="text-[13px] font-medium tracking-wide hover:text-sage transition-colors whitespace-nowrap"
               >
                 {link.label}
               </Link>
             ))}
-            <Link href="/book" className="px-6 py-2 bg-sage text-white rounded-full text-sm font-medium hover:bg-sage-dark transition-all hover:scale-105">
+            <Link href="/referrals" className="text-[13px] font-medium tracking-wide hover:text-sage transition-colors inline-flex items-center gap-1.5 whitespace-nowrap">
+              Refer a Friend
+              <span className="inline-block px-2 py-0.5 bg-purple-500 text-white text-[10px] rounded-full">£10 Off</span>
+            </Link>
+            <Link href="/book" className="px-5 py-2 bg-sage text-white rounded-full text-[13px] font-medium hover:bg-sage-dark transition-all hover:scale-105 whitespace-nowrap ml-2">
               Book Now
             </Link>
-            <Link href="/admin" className="p-2 hover:bg-sage/10 rounded-lg transition-colors" title="CRM Login">
-              <LogIn size={20} className="text-sage" />
+            <Link href="/admin" className="p-2 hover:bg-sage/10 rounded-lg transition-colors ml-1" title="CRM Login">
+              <LogIn size={18} className="text-sage" />
             </Link>
           </div>
 
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden p-2 hover:bg-sage/10 rounded-lg transition-colors"
+            className="lg:hidden p-2 hover:bg-sage/10 rounded-lg transition-colors"
             aria-label="Toggle menu"
           >
             {isOpen ? <X size={24} /> : <Menu size={24} />}
@@ -86,7 +90,7 @@ export default function Navigation() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-offwhite border-t border-mist"
+            className="lg:hidden bg-offwhite border-t border-mist"
           >
             <div className="container-custom px-6 py-6 space-y-4">
               {navLinks.map((link) => (
@@ -99,6 +103,16 @@ export default function Navigation() {
                   {link.label}
                 </Link>
               ))}
+              <Link
+                href="/referrals"
+                onClick={() => setIsOpen(false)}
+                className="block text-lg font-medium hover:text-sage transition-colors"
+              >
+                <span className="flex items-center gap-2">
+                  Refer a Friend
+                  <span className="inline-block px-2 py-0.5 bg-purple-500 text-white text-xs rounded-full">£10 Off</span>
+                </span>
+              </Link>
               <Link
                 href="/book"
                 onClick={() => setIsOpen(false)}
