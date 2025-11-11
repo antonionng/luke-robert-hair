@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
     let leadId: string | null = null;
     const { data: existingLead } = await supabase
       .from('leads')
-      .select('id')
+      .select('id, lead_score')
       .eq('email', normalizedEmail)
       .single();
 
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
             usedReferralCode: true,
             referralCode: normalizedCode,
           },
-          lead_score: existingLead.lead_score || 0 + 10, // Bonus points for referral
+          lead_score: (existingLead.lead_score || 0) + 10, // Bonus points for referral
         })
         .eq('id', leadId);
     } else {
