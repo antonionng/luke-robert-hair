@@ -21,7 +21,7 @@ export default function CPDPartnershipsPage() {
           ...cpdCourses.map(course => 
             generateCourseSchema({
               name: course.title,
-              description: course.description,
+              description: course.shortDescription,
               provider: siteConfig.name,
               duration: course.duration,
             })
