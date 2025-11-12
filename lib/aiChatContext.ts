@@ -14,6 +14,7 @@ export interface ChatContext {
   jobTitle?: string;
   studentNumbers?: number;
   userType?: 'individual' | 'institution';
+  detectedLocation?: 'reading' | 'knutsford' | 'altrincham' | 'cheshire' | 'berkshire';
 }
 
 export interface ExtractedInfo {
@@ -107,13 +108,17 @@ When you have learned:
 
 Then respond with: "I have everything I need to help. Would you like me to connect you with Luke for a 15-minute discovery call? He can discuss pricing, dates, and tailor a programme specifically for your hair and beauty students."
 
+If they want to learn more about CPD partnerships first, say "I'll show you a button below to explore our CPD partnerships page" and add [ACTION:CPD] on a new line.
+
 IMPORTANT:
 - Never invent details about pricing, dates, or availability
 - Always position CPD certification as valuable for students' portfolios
 - Focus on practical skills students will use in salons and with clients
 - Mention that programmes can be customized for specific beauty disciplines
 - Reference employability and industry readiness frequently
-- Be helpful and consultative, not pushy`;
+- Be helpful and consultative, not pushy
+- Use [ACTION:CPD] to show CPD partnerships page button
+- NEVER use placeholder text like "[insert link here]"`;
 }
 
 /**
@@ -136,9 +141,11 @@ For COURSE enquiries:
 - Explain that courses focus on precision, consistency, and commercial viability
 
 For BOOKING enquiries:
-- Direct them to the booking page
-- Mention services: Precision cutting, coloring, balayage
-- Locations: Cheshire and Berkshire (Reading area)
+- Tell them "I'll show you a button below to book" then add [ACTION:BOOK]
+- Mention services: Precision haircuts, restyles, and gents hairstyles
+- Luke specializes in CUTTING ONLY (no color services)
+- Locations: Reading (Caversham), Knutsford, Altrincham
+- NEVER use placeholder text or broken links
 
 Keep responses concise and helpful. If asked about something you don't know, be honest and suggest they contact Luke directly.`;
 }
@@ -152,6 +159,32 @@ export function getSystemPromptForContext(context: ChatContext): string {
   }
   
   return getDefaultSystemPrompt();
+}
+
+/**
+ * Detect location mentions in conversation
+ */
+export function detectLocation(messages: any[]): string | undefined {
+  const userMessages = messages
+    .filter(m => m.role === 'user')
+    .map(m => m.content.toLowerCase())
+    .join(' ');
+
+  // Location patterns with priority
+  const locationMappings = [
+    { pattern: /\b(reading|caversham|berkshire|rg4)\b/i, location: 'reading' },
+    { pattern: /\b(knutsford|wa16)\b/i, location: 'knutsford' },
+    { pattern: /\b(altrincham|wa14)\b/i, location: 'altrincham' },
+    { pattern: /\b(cheshire)\b/i, location: 'cheshire' }, // General Cheshire could be Knutsford or Altrincham
+  ];
+
+  for (const { pattern, location } of locationMappings) {
+    if (pattern.test(userMessages)) {
+      return location;
+    }
+  }
+
+  return undefined;
 }
 
 /**

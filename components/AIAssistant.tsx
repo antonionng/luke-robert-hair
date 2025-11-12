@@ -1,14 +1,16 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, GraduationCap, Building, CheckCircle } from 'lucide-react';
+import { MessageCircle, X, Send, GraduationCap, Building, CheckCircle, Calendar, BookOpen, Mail, Phone } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
+import Link from 'next/link';
 import { 
   detectContextFromPage, 
   extractInstitutionalInfo,
   shouldOfferLeadCapture,
   generateConversationSummary,
+  detectLocation,
   ChatContext,
   ExtractedInfo,
 } from '@/lib/aiChatContext';
@@ -16,12 +18,114 @@ import {
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+  actions?: ActionType[];
 }
 
 interface LeadForm {
   name: string;
   email: string;
   phone: string;
+}
+
+type ActionType = 'BOOK' | 'EDUCATION' | 'SALON' | 'CONTACT' | 'CPD';
+
+interface ActionButtonProps {
+  action: ActionType;
+  onClick: () => void;
+}
+
+// Action Button Component
+function ActionButton({ action, onClick }: ActionButtonProps) {
+  const actionConfig = {
+    BOOK: {
+      label: 'Book Appointment',
+      icon: Calendar,
+      color: 'bg-sage hover:bg-sage-dark',
+    },
+    EDUCATION: {
+      label: 'View Education Courses',
+      icon: GraduationCap,
+      color: 'bg-indigo-600 hover:bg-indigo-700',
+    },
+    SALON: {
+      label: 'View Salon Services',
+      icon: BookOpen,
+      color: 'bg-sage hover:bg-sage-dark',
+    },
+    CONTACT: {
+      label: 'Contact Us',
+      icon: Mail,
+      color: 'bg-graphite hover:bg-graphite/90',
+    },
+    CPD: {
+      label: 'CPD Partnerships',
+      icon: Building,
+      color: 'bg-indigo-600 hover:bg-indigo-700',
+    },
+  };
+
+  const config = actionConfig[action];
+  const Icon = config.icon;
+
+  return (
+    <button
+      onClick={onClick}
+      className={`${config.color} text-white px-4 py-3 rounded-lg font-medium transition-all duration-200 hover:shadow-lg flex items-center gap-2 w-full justify-center`}
+    >
+      <Icon size={18} />
+      {config.label}
+    </button>
+  );
+}
+
+// Parse action markers from message content
+function parseActions(content: string): { cleanContent: string; actions: ActionType[] } {
+  const actionMarkers = /\[ACTION:(BOOK|EDUCATION|SALON|CONTACT|CPD)\]/g;
+  const actions: ActionType[] = [];
+  let match;
+
+  while ((match = actionMarkers.exec(content)) !== null) {
+    actions.push(match[1] as ActionType);
+  }
+
+  const cleanContent = content.replace(actionMarkers, '').trim();
+  return { cleanContent, actions };
+}
+
+// Parse markdown links in text
+function parseMarkdownLinks(text: string): React.ReactNode {
+  const parts: React.ReactNode[] = [];
+  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = linkRegex.exec(text)) !== null) {
+    // Add text before the link
+    if (match.index > lastIndex) {
+      parts.push(text.substring(lastIndex, match.index));
+    }
+    
+    // Add the link
+    const [fullMatch, linkText, url] = match;
+    parts.push(
+      <Link
+        key={match.index}
+        href={url}
+        className="text-sage font-medium underline hover:text-sage-dark transition-colors"
+      >
+        {linkText}
+      </Link>
+    );
+    
+    lastIndex = match.index + fullMatch.length;
+  }
+
+  // Add remaining text
+  if (lastIndex < text.length) {
+    parts.push(text.substring(lastIndex));
+  }
+
+  return parts.length > 0 ? parts : text;
 }
 
 export default function AIAssistant() {
@@ -138,12 +242,18 @@ export default function AIAssistant() {
     setQuickReplies([]); // Clear quick replies after first message
 
     try {
+      // Detect location from conversation
+      const detectedLocation = detectLocation(newMessages);
+      const updatedContext = detectedLocation 
+        ? { ...context, detectedLocation } 
+        : context;
+
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: newMessages,
-          context,
+          context: updatedContext,
         }),
       });
 
@@ -157,7 +267,14 @@ export default function AIAssistant() {
         throw new Error(data.error);
       }
 
-      setMessages((prev) => [...prev, { role: 'assistant', content: data.message || data.content || 'No response received' }]);
+      const assistantMessage = data.message || data.content || 'No response received';
+      const { cleanContent, actions } = parseActions(assistantMessage);
+      
+      setMessages((prev) => [...prev, { 
+        role: 'assistant', 
+        content: cleanContent,
+        actions: actions.length > 0 ? actions : undefined
+      }]);
       
       // Check if we should offer lead capture
       if (data.offerLeadCapture || shouldOfferLeadCapture(data.extractedInfo || extractInstitutionalInfo(newMessages), newMessages, context)) {
@@ -224,6 +341,18 @@ export default function AIAssistant() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await handleSendMessage(input);
+  };
+
+  const handleActionClick = (action: ActionType) => {
+    const routes = {
+      BOOK: '/book',
+      EDUCATION: '/education',
+      SALON: '/salon',
+      CONTACT: '/contact',
+      CPD: '/cpd-partnerships',
+    };
+    
+    window.location.href = routes[action];
   };
 
   // Get context-aware header information
@@ -309,37 +438,54 @@ export default function AIAssistant() {
                 </div>
               )}
               {messages.map((message, index) => (
-                <div
-                  key={index}
-                  className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
+                <div key={index} className="space-y-2">
                   <div
-                    className={`max-w-[80%] p-4 rounded-2xl ${
-                      message.role === 'user'
-                        ? 'bg-sage text-white rounded-br-sm'
-                        : 'bg-white text-graphite rounded-bl-sm shadow-sm'
-                    }`}
+                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
-                    <div className="text-sm leading-relaxed whitespace-pre-line space-y-2">
-                      {message.content.split('\n').map((line, i) => {
-                        // Check if line starts with bullet point or dash
-                        if (line.trim().startsWith('•') || line.trim().startsWith('-')) {
-                          return (
-                            <div key={i} className="flex gap-2 items-start">
-                              <span className="text-sage mt-0.5">•</span>
-                              <span className="flex-1">{line.replace(/^[•\-]\s*/, '')}</span>
-                            </div>
-                          );
-                        }
-                        // Check if line looks like a heading (ends with :)
-                        if (line.trim().endsWith(':') && line.length < 60) {
-                          return <div key={i} className="font-semibold text-graphite mt-2">{line}</div>;
-                        }
-                        // Regular line
-                        return line.trim() ? <div key={i}>{line}</div> : <div key={i} className="h-2" />;
-                      })}
+                    <div
+                      className={`max-w-[80%] p-4 rounded-2xl ${
+                        message.role === 'user'
+                          ? 'bg-sage text-white rounded-br-sm'
+                          : 'bg-white text-graphite rounded-bl-sm shadow-sm'
+                      }`}
+                    >
+                      <div className="text-sm leading-relaxed whitespace-pre-line space-y-2">
+                        {message.content.split('\n').map((line, i) => {
+                          // Check if line starts with bullet point or dash
+                          if (line.trim().startsWith('•') || line.trim().startsWith('-')) {
+                            const bulletContent = line.replace(/^[•\-]\s*/, '');
+                            return (
+                              <div key={i} className="flex gap-2 items-start">
+                                <span className="text-sage mt-0.5">•</span>
+                                <span className="flex-1">{parseMarkdownLinks(bulletContent)}</span>
+                              </div>
+                            );
+                          }
+                          // Check if line looks like a heading (ends with :)
+                          if (line.trim().endsWith(':') && line.length < 60) {
+                            return <div key={i} className="font-semibold text-graphite mt-2">{line}</div>;
+                          }
+                          // Regular line - parse markdown links
+                          return line.trim() ? <div key={i}>{parseMarkdownLinks(line)}</div> : <div key={i} className="h-2" />;
+                        })}
+                      </div>
                     </div>
                   </div>
+                  
+                  {/* Action Buttons */}
+                  {message.role === 'assistant' && message.actions && message.actions.length > 0 && (
+                    <div className="flex justify-start">
+                      <div className="max-w-[80%] space-y-2">
+                        {message.actions.map((action, actionIndex) => (
+                          <ActionButton
+                            key={actionIndex}
+                            action={action}
+                            onClick={() => handleActionClick(action)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
               

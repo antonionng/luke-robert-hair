@@ -180,8 +180,8 @@ export default function Home() {
 
       {/* Salon Services Section */}
       <section className="section-padding bg-gradient-to-br from-salon-light/20 to-white relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-salon/5 rounded-full blur-3xl"></div>
-        <div className="container-custom">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-salon/5 rounded-full blur-3xl -z-10"></div>
+        <div className="container-custom relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -219,8 +219,8 @@ export default function Home() {
 
       {/* Education Section */}
       <section className="section-padding bg-gradient-to-br from-education-light/30 to-white relative overflow-hidden">
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-education/10 rounded-full blur-3xl"></div>
-        <div className="container-custom">
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-education/10 rounded-full blur-3xl -z-10"></div>
+        <div className="container-custom relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             {/* Left: Image */}
             <motion.div
