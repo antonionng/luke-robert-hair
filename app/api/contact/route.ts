@@ -104,6 +104,23 @@ export async function POST(request: NextRequest) {
       // Don't fail the entire request if email fails
     }
 
+    // Send admin notification
+    try {
+      const { sendAdminNotification } = await import('@/lib/email');
+      await sendAdminNotification('contact_form', {
+        contactName: `${firstName} ${lastName}`,
+        email: newLead.email,
+        phone: phone || null,
+        enquiryType: type,
+        message: message || null,
+        leadId: newLead.id,
+      });
+      console.log('✅ [CONTACT API] Admin notification sent');
+    } catch (emailError) {
+      console.error('⚠️ [CONTACT API] Failed to send admin notification:', emailError);
+      // Don't fail the entire request if email fails
+    }
+
     return NextResponse.json({ 
       success: true, 
       message: 'Contact form submitted successfully',

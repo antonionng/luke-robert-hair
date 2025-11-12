@@ -36,8 +36,10 @@ function getResendClient() {
 const FROM_EMAIL = process.env.FROM_EMAIL || 'Luke Robert Hair <hello@lukeroberthair.com>';
 const REPLY_TO = process.env.REPLY_TO_EMAIL || 'hello@lukeroberthair.com';
 
-// Admin notification configuration
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'ag@experrt.com'; // Owner email for all notifications
+// Admin notification configuration - dual admin emails
+const ADMIN_EMAIL_PRIMARY = process.env.ADMIN_EMAIL || 'ag@experrt.com';
+const ADMIN_EMAIL_SECONDARY = process.env.ADMIN_EMAIL_SECONDARY || 'luke@lukeroberthair.com';
+const ADMIN_EMAILS = [ADMIN_EMAIL_PRIMARY, ADMIN_EMAIL_SECONDARY];
 const ADMIN_NOTIFICATIONS_ENABLED = process.env.ADMIN_NOTIFICATION_ENABLED !== 'false'; // Default true
 
 type EmailType = Database['public']['Tables']['email_logs']['Row']['email_type'];
@@ -881,10 +883,10 @@ Precision hairdressing & professional education
 
 /**
  * Send admin notification for high-priority events
- * Luke gets immediate alerts for: bookings, CPD enquiries, salon referrals
+ * Both admins get immediate alerts for: bookings, CPD enquiries, salon referrals, contact forms
  */
 export async function sendAdminNotification(
-  eventType: 'new_booking' | 'cpd_enquiry' | 'education_enquiry' | 'salon_referral' | 'ai_chat_lead',
+  eventType: 'new_booking' | 'cpd_enquiry' | 'education_enquiry' | 'salon_referral' | 'ai_chat_lead' | 'contact_form',
   data: any
 ): Promise<{ success: boolean; error?: string }> {
   if (!ADMIN_NOTIFICATIONS_ENABLED) {
@@ -927,24 +929,44 @@ export async function sendAdminNotification(
       bodyText = generateAIChatAdminEmailText(data);
       break;
 
+    case 'contact_form':
+      subject = `[CONTACT FORM] ${data.contactName} - ${data.enquiryType || 'General'}`;
+      bodyHtml = generateContactFormAdminEmail(data);
+      bodyText = generateContactFormAdminEmailText(data);
+      break;
+
     default:
       return { success: false, error: 'Unknown event type' };
   }
 
-  try {
-    return await sendEmail({
-      to: ADMIN_EMAIL,
-      toName: 'Luke',
-      subject,
-      bodyHtml,
-      bodyText,
-      emailType: 'transactional',
-      templateName: `admin_${eventType}`,
-    });
-  } catch (error: any) {
-    console.error('Admin notification error:', error);
-    return { success: false, error: error.message };
+  // Send to all admin emails
+  const results = await Promise.allSettled(
+    ADMIN_EMAILS.map(adminEmail =>
+      sendEmail({
+        to: adminEmail,
+        toName: adminEmail.includes('luke') ? 'Luke' : 'Admin',
+        subject,
+        bodyHtml,
+        bodyText,
+        emailType: 'transactional',
+        templateName: `admin_${eventType}`,
+      })
+    )
+  );
+
+  // Check if at least one email succeeded
+  const successCount = results.filter(r => r.status === 'fulfilled' && r.value.success).length;
+  
+  if (successCount === 0) {
+    console.error('All admin notification emails failed');
+    return { success: false, error: 'Failed to send to any admin' };
   }
+
+  if (successCount < ADMIN_EMAILS.length) {
+    console.warn(`Admin notifications: ${successCount}/${ADMIN_EMAILS.length} succeeded`);
+  }
+
+  return { success: true };
 }
 
 // ============================================================================
@@ -1497,6 +1519,90 @@ View in admin: ${process.env.NEXT_PUBLIC_BASE_URL}/admin
   `.trim();
 }
 
+function generateContactFormAdminEmail(data: any): string {
+  const { contactName, email, phone, enquiryType, message, leadId } = data;
+
+  return `
+<!DOCTYPE html>
+<html>
+<body style="margin: 0; padding: 0; background-color: #FAFAF8; font-family: system-ui, -apple-system, sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; padding: 40px;">
+          <tr>
+            <td>
+              <div style="background-color: #3B82F6; color: white; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+                <h2 style="margin: 0; font-size: 24px;">📝 CONTACT FORM SUBMISSION</h2>
+              </div>
+              
+              <h3 style="margin: 0 0 16px 0; font-size: 20px; color: #2C2C2C;">Contact Details</h3>
+              <table width="100%" cellpadding="8" cellspacing="0" style="margin-bottom: 24px;">
+                <tr>
+                  <td style="font-size: 14px; color: #616F64; font-weight: 600; width: 140px;">Name:</td>
+                  <td style="font-size: 14px; color: #2C2C2C;"><strong>${contactName}</strong></td>
+                </tr>
+                <tr>
+                  <td style="font-size: 14px; color: #616F64; font-weight: 600;">Email:</td>
+                  <td style="font-size: 14px; color: #2C2C2C;"><a href="mailto:${email}">${email}</a></td>
+                </tr>
+                ${phone ? `
+                <tr>
+                  <td style="font-size: 14px; color: #616F64; font-weight: 600;">Phone:</td>
+                  <td style="font-size: 14px; color: #2C2C2C;"><a href="tel:${phone}">${phone}</a></td>
+                </tr>
+                ` : ''}
+                ${enquiryType ? `
+                <tr>
+                  <td style="font-size: 14px; color: #616F64; font-weight: 600;">Enquiry Type:</td>
+                  <td style="font-size: 14px; color: #2C2C2C;">${enquiryType}</td>
+                </tr>
+                ` : ''}
+              </table>
+
+              ${message ? `
+              <h3 style="margin: 0 0 16px 0; font-size: 20px; color: #2C2C2C;">Message</h3>
+              <div style="background-color: #FFF9E6; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+                <p style="margin: 0; font-size: 14px; color: #2C2C2C; white-space: pre-wrap;">${message}</p>
+              </div>
+              ` : ''}
+
+              <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #E9E9E7;">
+                <p style="margin: 0; font-size: 12px; color: #999;">
+                  Lead ID: ${leadId || 'N/A'}<br>
+                  View in admin: ${process.env.NEXT_PUBLIC_BASE_URL}/admin
+                </p>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `;
+}
+
+function generateContactFormAdminEmailText(data: any): string {
+  const { contactName, email, phone, enquiryType, message, leadId } = data;
+
+  return `
+📝 CONTACT FORM SUBMISSION
+
+CONTACT DETAILS
+Name: ${contactName}
+Email: ${email}
+${phone ? `Phone: ${phone}` : ''}
+${enquiryType ? `Enquiry Type: ${enquiryType}` : ''}
+
+${message ? `MESSAGE\n${message}\n` : ''}
+---
+Lead ID: ${leadId || 'N/A'}
+View in admin: ${process.env.NEXT_PUBLIC_BASE_URL}/admin
+  `.trim();
+}
+
 /**
  * Send daily digest email to admin
  * Lower priority events: contact forms, education enquiries, general activities
@@ -1652,15 +1758,34 @@ View full details: ${process.env.NEXT_PUBLIC_BASE_URL}/admin
   `.trim();
 
   try {
-    return await sendEmail({
-      to: ADMIN_EMAIL,
-      toName: 'Luke',
-      subject,
-      bodyHtml,
-      bodyText,
-      emailType: 'transactional',
-      templateName: 'admin_daily_digest',
-    });
+    // Send to all admin emails
+    const results = await Promise.allSettled(
+      ADMIN_EMAILS.map(adminEmail =>
+        sendEmail({
+          to: adminEmail,
+          toName: adminEmail.includes('luke') ? 'Luke' : 'Admin',
+          subject,
+          bodyHtml,
+          bodyText,
+          emailType: 'transactional',
+          templateName: 'admin_daily_digest',
+        })
+      )
+    );
+
+    // Check if at least one email succeeded
+    const successCount = results.filter(r => r.status === 'fulfilled' && r.value.success).length;
+    
+    if (successCount === 0) {
+      console.error('All daily digest emails failed');
+      return { success: false, error: 'Failed to send to any admin' };
+    }
+
+    if (successCount < ADMIN_EMAILS.length) {
+      console.warn(`Daily digest: ${successCount}/${ADMIN_EMAILS.length} succeeded`);
+    }
+
+    return { success: true };
   } catch (error: any) {
     console.error('Daily digest error:', error);
     return { success: false, error: error.message };
