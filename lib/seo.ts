@@ -382,3 +382,4 @@ export function generateLocalBusinessSchema(location: typeof siteConfig.location
   };
 }
 
+

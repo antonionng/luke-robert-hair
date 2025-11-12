@@ -53,3 +53,4 @@ The system automatically cycles through all images in this folder, ensuring each
 - All images should be properly licensed for commercial use
 - Maintain consistent quality and brand aesthetic across all images
 
+

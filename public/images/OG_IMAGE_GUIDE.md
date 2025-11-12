@@ -73,3 +73,4 @@ Consider implementing dynamic OG images for different pages:
 
 Update the SEO configuration in `/lib/seo.ts` to use page-specific images.
 
+

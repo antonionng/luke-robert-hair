@@ -55,3 +55,4 @@ The system automatically cycles through all images in this folder, ensuring each
 - Maintain consistent quality and brand aesthetic across all images
 - Consider including images that show the educational relationship between instructor and students
 
+

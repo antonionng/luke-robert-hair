@@ -42,3 +42,4 @@ CREATE TRIGGER update_brand_image_usage_timestamp
   FOR EACH ROW
   EXECUTE FUNCTION update_brand_image_usage_updated_at();
 
+

@@ -215,3 +215,4 @@ A professional OG image = **More clicks** = **More bookings** 🚀
 **Priority:** Medium (affects social sharing only)  
 **Time Required:** 10-30 minutes depending on method
 
+

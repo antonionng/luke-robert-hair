@@ -20,3 +20,4 @@ export default function StructuredData({ data }: { data: object | object[] }) {
   );
 }
 
+

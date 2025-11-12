@@ -28,3 +28,4 @@ The following PNG logo files need to be added to this directory:
 ## Temporary Fallback:
 Until real logo PNG files are added, the brand names will display as text placeholders.
 
+
