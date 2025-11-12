@@ -29,11 +29,11 @@ export default function ReferralHero({ onGenerate }: ReferralHeroProps) {
   };
 
   return (
-    <div className="relative overflow-hidden bg-gradient-to-br from-purple-600 via-pink-500 to-purple-700 text-white">
+    <div className="relative overflow-hidden bg-gradient-to-br from-red-600 via-orange-500 to-red-700 text-white">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-pulse-slow" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-pink-300/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '1s' }} />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-orange-300/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '1s' }} />
       </div>
 
       <div className="relative container-custom section-padding">
@@ -57,7 +57,7 @@ export default function ReferralHero({ onGenerate }: ReferralHeroProps) {
             <h1 className="text-5xl md:text-6xl font-playfair font-light">
               Refer a Friend, Get £10 Off
             </h1>
-            <p className="text-xl md:text-2xl text-purple-100">
+            <p className="text-xl md:text-2xl text-red-100">
               Share the experience of precision haircuts. When your friends book, you both save!
             </p>
           </div>
@@ -101,7 +101,7 @@ export default function ReferralHero({ onGenerate }: ReferralHeroProps) {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
-                    className="w-full px-6 py-4 border border-mist rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-graphite"
+                    className="w-full px-6 py-4 border border-mist rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 text-graphite"
                   />
                 </div>
                 <div>
@@ -111,7 +111,7 @@ export default function ReferralHero({ onGenerate }: ReferralHeroProps) {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="w-full px-6 py-4 border border-mist rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-graphite"
+                    className="w-full px-6 py-4 border border-mist rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 text-graphite"
                   />
                 </div>
                 {error && (

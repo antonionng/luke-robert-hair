@@ -113,7 +113,7 @@ export default function ReferralsPage() {
 
             {isLoadingStats ? (
               <div className="text-center py-12">
-                <div className="inline-block w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
+                <div className="inline-block w-12 h-12 border-4 border-red-200 border-t-red-600 rounded-full animate-spin" />
               </div>
             ) : stats?.stats ? (
               <ReferralStats
@@ -146,19 +146,19 @@ export default function ReferralsPage() {
                 icon: Users,
                 title: 'Share Your Code',
                 description: 'Send your unique referral code to friends who deserve a great haircut.',
-                color: 'from-purple-500 to-purple-600',
+                color: 'from-red-500 to-red-600',
               },
               {
                 icon: Sparkles,
                 title: 'They Book & Save',
                 description: 'Your friend uses your code and gets £10 off their first appointment.',
-                color: 'from-pink-500 to-pink-600',
+                color: 'from-orange-500 to-orange-600',
               },
               {
                 icon: TrendingUp,
                 title: 'You Both Win',
                 description: 'Once they complete their booking, you get £10 off your next appointment too!',
-                color: 'from-purple-600 to-pink-600',
+                color: 'from-red-600 to-orange-600',
               },
             ].map((step, index) => (
               <motion.div
@@ -169,9 +169,9 @@ export default function ReferralsPage() {
                 transition={{ delay: index * 0.2 }}
                 className="relative"
               >
-                <div className="bg-white border-2 border-purple-100 rounded-2xl p-8 hover:border-purple-300 transition-all hover:shadow-xl">
+                <div className="bg-white border-2 border-red-100 rounded-2xl p-8 hover:border-red-300 transition-all hover:shadow-xl">
                   {/* Step Number */}
-                  <div className="absolute -top-4 -left-4 w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 text-white rounded-full flex items-center justify-center text-xl font-bold shadow-lg">
+                  <div className="absolute -top-4 -left-4 w-12 h-12 bg-gradient-to-br from-red-500 to-orange-500 text-white rounded-full flex items-center justify-center text-xl font-bold shadow-lg">
                     {index + 1}
                   </div>
 
@@ -202,7 +202,7 @@ export default function ReferralsPage() {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <HelpCircle className="inline-block text-purple-600 mb-4" size={48} />
+            <HelpCircle className="inline-block text-red-600 mb-4" size={48} />
             <h2 className="mb-4">Frequently Asked Questions</h2>
           </motion.div>
 
@@ -235,7 +235,7 @@ export default function ReferralsPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-white rounded-xl p-6 shadow-lg border border-purple-100"
+                className="bg-white rounded-xl p-6 shadow-lg border border-red-100"
               >
                 <h3 className="text-lg font-medium text-graphite mb-2">{faq.q}</h3>
                 <p className="text-graphite/70">{faq.a}</p>
@@ -247,7 +247,7 @@ export default function ReferralsPage() {
 
       {/* CTA */}
       {!referralCode && (
-        <section className="section-padding bg-gradient-to-br from-purple-600 via-pink-500 to-purple-700 text-white">
+        <section className="section-padding bg-gradient-to-br from-red-600 via-orange-500 to-red-700 text-white">
           <div className="container-custom max-w-3xl text-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -258,7 +258,7 @@ export default function ReferralsPage() {
               <h2 className="text-4xl md:text-5xl font-playfair font-light text-white">
                 Ready to Start Sharing?
               </h2>
-              <p className="text-xl text-purple-100">
+              <p className="text-xl text-red-100">
                 Get your referral code now and start earning rewards while helping friends discover precision haircuts.
               </p>
               <button
@@ -268,7 +268,7 @@ export default function ReferralsPage() {
                     (document.querySelector('input[type="text"]') as HTMLInputElement)?.focus();
                   }, 500);
                 }}
-                className="inline-block px-8 py-4 bg-white text-purple-600 rounded-full font-medium hover:shadow-xl transition-all hover:scale-105"
+                className="inline-block px-8 py-4 bg-white text-red-600 rounded-full font-medium hover:shadow-xl transition-all hover:scale-105"
               >
                 Get Your Code Now
               </button>

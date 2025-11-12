@@ -1539,7 +1539,7 @@ export async function sendAdminDailyDigest(params: {
         <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; padding: 40px;">
           <tr>
             <td>
-              <div style="background-color: #3B82F6; color: white; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+              <div style="background-color: #EF4444; color: white; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
                 <h2 style="margin: 0; font-size: 24px;">📊 Daily Activity Summary</h2>
                 <p style="margin: 8px 0 0 0; font-size: 14px; opacity: 0.9;">${today}</p>
               </div>
@@ -1560,7 +1560,7 @@ export async function sendAdminDailyDigest(params: {
                   </tr>
                   <tr style="border-top: 2px solid #E9E9E7;">
                     <td style="font-size: 16px; color: #2C2C2C; font-weight: 600; padding-top: 12px;">Total:</td>
-                    <td style="font-size: 18px; color: #3B82F6; font-weight: 600; text-align: right; padding-top: 12px;">${totalItems}</td>
+                    <td style="font-size: 18px; color: #EF4444; font-weight: 600; text-align: right; padding-top: 12px;">${totalItems}</td>
                   </tr>
                 </table>
               </div>
@@ -1568,13 +1568,13 @@ export async function sendAdminDailyDigest(params: {
               ${contactForms.length > 0 ? `
               <h3 style="margin: 24px 0 16px 0; font-size: 20px; color: #2C2C2C;">📝 Contact Form Submissions</h3>
               ${contactForms.map((form, index) => `
-                <div style="background-color: #F9FAFB; padding: 16px; border-radius: 8px; margin-bottom: 12px; border-left: 4px solid #3B82F6;">
+                <div style="background-color: #F9FAFB; padding: 16px; border-radius: 8px; margin-bottom: 12px; border-left: 4px solid #EF4444;">
                   <p style="margin: 0 0 8px 0; font-size: 16px; color: #2C2C2C; font-weight: 600;">${form.first_name} ${form.last_name}</p>
                   <p style="margin: 0 0 4px 0; font-size: 14px; color: #616F64;"><a href="mailto:${form.email}">${form.email}</a></p>
                   ${form.phone ? `<p style="margin: 0 0 4px 0; font-size: 14px; color: #616F64;">${form.phone}</p>` : ''}
                   <p style="margin: 8px 0 0 0; font-size: 12px; color: #999;">
                     Source: ${form.source || 'contact_form'} | 
-                    <a href="${process.env.NEXT_PUBLIC_BASE_URL}/admin" style="color: #3B82F6;">View Lead</a>
+                    <a href="${process.env.NEXT_PUBLIC_BASE_URL}/admin" style="color: #EF4444;">View Lead</a>
                   </p>
                 </div>
               `).join('')}
@@ -1604,7 +1604,7 @@ export async function sendAdminDailyDigest(params: {
               ` : ''}
 
               <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #E9E9E7; text-align: center;">
-                <a href="${process.env.NEXT_PUBLIC_BASE_URL}/admin" style="display: inline-block; background-color: #3B82F6; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">View Admin Dashboard</a>
+                <a href="${process.env.NEXT_PUBLIC_BASE_URL}/admin" style="display: inline-block; background-color: #EF4444; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">View Admin Dashboard</a>
               </div>
             </td>
           </tr>
@@ -1697,9 +1697,9 @@ export async function sendReferralCodeEmail(params: {
       <td align="center" style="padding: 40px 20px;">
         <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: hidden;">
           
-          <!-- Purple/Pink Gradient Header -->
+          <!-- Red/Orange Gradient Header -->
           <tr>
-            <td style="background: linear-gradient(135deg, #A855F7 0%, #EC4899 50%, #9333EA 100%); padding: 40px; text-align: center;">
+            <td style="background: linear-gradient(135deg, #EF4444 0%, #F97316 50%, #DC2626 100%); padding: 40px; text-align: center;">
               <h1 style="margin: 0 0 16px 0; font-family: 'Playfair Display', Georgia, serif; font-size: 32px; color: #ffffff; font-weight: 400;">
                 Your Referral Code is Ready! 🎉
               </h1>
@@ -1727,10 +1727,10 @@ export async function sendReferralCodeEmail(params: {
                     <p style="margin: 0 0 12px 0; font-family: system-ui, -apple-system, sans-serif; font-size: 14px; color: #7C3AED; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
                       Your Referral Code
                     </p>
-                    <p style="margin: 0 0 16px 0; font-family: 'Courier New', monospace; font-size: 36px; color: #A855F7; font-weight: bold; letter-spacing: 2px;">
+                    <p style="margin: 0 0 16px 0; font-family: 'Courier New', monospace; font-size: 36px; color: #EF4444; font-weight: bold; letter-spacing: 2px;">
                       ${params.code}
                     </p>
-                    <p style="margin: 0; font-family: system-ui, -apple-system, sans-serif; font-size: 14px; color: #9333EA;">
+                    <p style="margin: 0; font-family: system-ui, -apple-system, sans-serif; font-size: 14px; color: #DC2626;">
                       Share this code with up to 10 friends
                     </p>
                   </td>
@@ -1750,7 +1750,7 @@ export async function sendReferralCodeEmail(params: {
               </div>
 
               <!-- Pre-written Share Message -->
-              <div style="background-color: #F9FAFB; border-left: 4px solid #EC4899; border-radius: 4px; padding: 16px; margin-bottom: 32px;">
+              <div style="background-color: #F9FAFB; border-left: 4px solid #F97316; border-radius: 4px; padding: 16px; margin-bottom: 32px;">
                 <p style="margin: 0 0 8px 0; font-family: system-ui, -apple-system, sans-serif; font-size: 12px; color: #6B7280; font-weight: 600; text-transform: uppercase;">
                   Copy & Share This Message
                 </p>
@@ -1763,7 +1763,7 @@ export async function sendReferralCodeEmail(params: {
               <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
                 <tr>
                   <td align="center">
-                    <a href="${params.shareUrl}" style="display: inline-block; padding: 16px 32px; background: linear-gradient(135deg, #A855F7 0%, #EC4899 50%, #9333EA 100%); color: #ffffff; text-decoration: none; border-radius: 50px; font-family: system-ui, -apple-system, sans-serif; font-size: 16px; font-weight: 600; box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);">
+                    <a href="${params.shareUrl}" style="display: inline-block; padding: 16px 32px; background: linear-gradient(135deg, #EF4444 0%, #F97316 50%, #DC2626 100%); color: #ffffff; text-decoration: none; border-radius: 50px; font-family: system-ui, -apple-system, sans-serif; font-size: 16px; font-weight: 600; box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);">
                       View Referral Link
                     </a>
                   </td>
@@ -1773,7 +1773,7 @@ export async function sendReferralCodeEmail(params: {
               <!-- Stats Preview -->
               <p style="margin: 0 0 16px 0; font-family: system-ui, -apple-system, sans-serif; font-size: 14px; line-height: 1.6; color: #616F64; text-align: center;">
                 Track your referrals and see your rewards at<br>
-                <a href="${process.env.NEXT_PUBLIC_BASE_URL}/referrals?code=${params.code}" style="color: #A855F7; text-decoration: none; font-weight: 600;">lukerobert.co.uk/referrals</a>
+                <a href="${process.env.NEXT_PUBLIC_BASE_URL}/referrals?code=${params.code}" style="color: #EF4444; text-decoration: none; font-weight: 600;">lukerobert.co.uk/referrals</a>
               </p>
             </td>
           </tr>
@@ -1868,7 +1868,7 @@ export async function sendReferralSuccessEmail(params: {
           
           <!-- Success Header -->
           <tr>
-            <td style="background: linear-gradient(135deg, #A855F7 0%, #EC4899 100%); padding: 40px; text-align: center;">
+            <td style="background: linear-gradient(135deg, #EF4444 0%, #F97316 100%); padding: 40px; text-align: center;">
               <div style="font-size: 48px; margin-bottom: 16px;">🎉</div>
               <h1 style="margin: 0 0 16px 0; font-family: 'Playfair Display', Georgia, serif; font-size: 32px; color: #ffffff; font-weight: 400;">
                 You Earned a Referral Reward!
@@ -1897,10 +1897,10 @@ export async function sendReferralSuccessEmail(params: {
                     <p style="margin: 0 0 8px 0; font-family: system-ui, -apple-system, sans-serif; font-size: 14px; color: #7C3AED; font-weight: 600; text-transform: uppercase;">
                       Your Reward
                     </p>
-                    <p style="margin: 0; font-family: system-ui, -apple-system, sans-serif; font-size: 42px; color: #A855F7; font-weight: bold;">
+                    <p style="margin: 0; font-family: system-ui, -apple-system, sans-serif; font-size: 42px; color: #EF4444; font-weight: bold;">
                       £${params.creditAmount.toFixed(2)}
                     </p>
-                    <p style="margin: 8px 0 0 0; font-family: system-ui, -apple-system, sans-serif; font-size: 14px; color: #9333EA;">
+                    <p style="margin: 8px 0 0 0; font-family: system-ui, -apple-system, sans-serif; font-size: 14px; color: #DC2626;">
                       Credit towards your next appointment
                     </p>
                   </td>
@@ -1915,7 +1915,7 @@ export async function sendReferralSuccessEmail(params: {
               <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
                 <tr>
                   <td align="center">
-                    <a href="${process.env.NEXT_PUBLIC_BASE_URL}/book" style="display: inline-block; padding: 16px 32px; background: linear-gradient(135deg, #A855F7 0%, #EC4899 50%, #9333EA 100%); color: #ffffff; text-decoration: none; border-radius: 50px; font-family: system-ui, -apple-system, sans-serif; font-size: 16px; font-weight: 600; box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);">
+                    <a href="${process.env.NEXT_PUBLIC_BASE_URL}/book" style="display: inline-block; padding: 16px 32px; background: linear-gradient(135deg, #EF4444 0%, #F97316 50%, #DC2626 100%); color: #ffffff; text-decoration: none; border-radius: 50px; font-family: system-ui, -apple-system, sans-serif; font-size: 16px; font-weight: 600; box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);">
                       Book Your Next Appointment
                     </a>
                   </td>
@@ -1999,7 +1999,7 @@ export async function sendReferralWelcomeEmail(params: {
           
           <!-- Welcome Header -->
           <tr>
-            <td style="background: linear-gradient(135deg, #A855F7 0%, #EC4899 100%); padding: 40px; text-align: center;">
+            <td style="background: linear-gradient(135deg, #EF4444 0%, #F97316 100%); padding: 40px; text-align: center;">
               <div style="font-size: 48px; margin-bottom: 16px;">💜</div>
               <h1 style="margin: 0 0 16px 0; font-family: 'Playfair Display', Georgia, serif; font-size: 32px; color: #ffffff; font-weight: 400;">
                 Welcome to Luke Robert Hair!
@@ -2028,10 +2028,10 @@ export async function sendReferralWelcomeEmail(params: {
                     <p style="margin: 0 0 8px 0; font-family: system-ui, -apple-system, sans-serif; font-size: 14px; color: #7C3AED; font-weight: 600; text-transform: uppercase;">
                       Your Discount
                     </p>
-                    <p style="margin: 0; font-family: system-ui, -apple-system, sans-serif; font-size: 42px; color: #A855F7; font-weight: bold;">
+                    <p style="margin: 0; font-family: system-ui, -apple-system, sans-serif; font-size: 42px; color: #EF4444; font-weight: bold;">
                       £${params.discountAmount.toFixed(2)} OFF
                     </p>
-                    <p style="margin: 8px 0 0 0; font-family: system-ui, -apple-system, sans-serif; font-size: 14px; color: #9333EA;">
+                    <p style="margin: 8px 0 0 0; font-family: system-ui, -apple-system, sans-serif; font-size: 14px; color: #DC2626;">
                       Applied to your booking with code <strong>${params.code}</strong>
                     </p>
                   </td>
@@ -2055,7 +2055,7 @@ export async function sendReferralWelcomeEmail(params: {
               <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
                 <tr>
                   <td align="center">
-                    <a href="${process.env.NEXT_PUBLIC_BASE_URL}/book?ref=${params.code}" style="display: inline-block; padding: 16px 32px; background: linear-gradient(135deg, #A855F7 0%, #EC4899 50%, #9333EA 100%); color: #ffffff; text-decoration: none; border-radius: 50px; font-family: system-ui, -apple-system, sans-serif; font-size: 16px; font-weight: 600; box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);">
+                    <a href="${process.env.NEXT_PUBLIC_BASE_URL}/book?ref=${params.code}" style="display: inline-block; padding: 16px 32px; background: linear-gradient(135deg, #EF4444 0%, #F97316 50%, #DC2626 100%); color: #ffffff; text-decoration: none; border-radius: 50px; font-family: system-ui, -apple-system, sans-serif; font-size: 16px; font-weight: 600; box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);">
                       Complete Your Booking
                     </a>
                   </td>

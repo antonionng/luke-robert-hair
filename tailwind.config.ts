@@ -26,11 +26,11 @@ const config: Config = {
           dark: '#5A6D6E',
         },
         referral: {
-          DEFAULT: '#A855F7',  // Purple-500 - energetic, stands out
-          light: '#C084FC',    // Purple-400 
-          dark: '#9333EA',     // Purple-600
-          pink: '#EC4899',     // Pink-500 for gradients
-          purple: '#A855F7',   // Alias for consistency
+          DEFAULT: '#EF4444',  // Red-500 - energetic, warm, stands out
+          light: '#F87171',    // Red-400 - lighter coral
+          dark: '#DC2626',     // Red-600 - deeper red
+          accent: '#F97316',   // Orange-500 for gradients
+          red: '#EF4444',      // Alias for consistency
         },
         accent: {
           cream: '#F5F3ED',    // Soft cream from logo
@@ -71,7 +71,7 @@ const config: Config = {
         'gradient-education': 'linear-gradient(135deg, #C9A86A 0%, #E0C99A 100%)',
         'gradient-salon': 'linear-gradient(135deg, #7A8E8F 0%, #A8B9BA 100%)',
         'gradient-sage': 'linear-gradient(135deg, #687B69 0%, #A4B5A5 100%)',
-        'gradient-referral': 'linear-gradient(135deg, #A855F7 0%, #EC4899 50%, #9333EA 100%)',
+        'gradient-referral': 'linear-gradient(135deg, #EF4444 0%, #F97316 50%, #DC2626 100%)',
       },
     },
   },

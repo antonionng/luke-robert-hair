@@ -43,8 +43,8 @@ export default function ReferralsTable({ leaderboard, aggregateStats }: Referral
           className="admin-card p-6"
         >
           <div className="flex items-start justify-between mb-4">
-            <div className="p-3 bg-purple-500/20 rounded-lg">
-              <Gift size={24} className="text-purple-400" />
+            <div className="p-3 bg-red-500/20 rounded-lg">
+              <Gift size={24} className="text-red-400" />
             </div>
           </div>
           <p className="text-3xl font-bold text-zinc-100 mb-1">{aggregateStats.totalCodes}</p>
@@ -59,8 +59,8 @@ export default function ReferralsTable({ leaderboard, aggregateStats }: Referral
           className="admin-card p-6"
         >
           <div className="flex items-start justify-between mb-4">
-            <div className="p-3 bg-pink-500/20 rounded-lg">
-              <Users size={24} className="text-pink-400" />
+            <div className="p-3 bg-orange-500/20 rounded-lg">
+              <Users size={24} className="text-orange-400" />
             </div>
           </div>
           <p className="text-3xl font-bold text-zinc-100 mb-1">{aggregateStats.totalRedemptions}</p>
@@ -90,8 +90,8 @@ export default function ReferralsTable({ leaderboard, aggregateStats }: Referral
           className="admin-card p-6"
         >
           <div className="flex items-start justify-between mb-4">
-            <div className="p-3 bg-blue-500/20 rounded-lg">
-              <TrendingUp size={24} className="text-blue-400" />
+            <div className="p-3 bg-red-500/20 rounded-lg">
+              <TrendingUp size={24} className="text-red-400" />
             </div>
           </div>
           <p className="text-3xl font-bold text-zinc-100 mb-1">{aggregateStats.overallConversionRate}%</p>
@@ -107,7 +107,7 @@ export default function ReferralsTable({ leaderboard, aggregateStats }: Referral
             onClick={() => setStatusFilter(status)}
             className={`px-4 py-2 rounded-lg font-medium transition-all ${
               statusFilter === status
-                ? 'bg-purple-500 text-white'
+                ? 'bg-red-500 text-white'
                 : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
             }`}
           >
@@ -159,7 +159,7 @@ export default function ReferralsTable({ leaderboard, aggregateStats }: Referral
                 filteredData.map((item) => (
                   <tr key={item.id} className="hover:bg-zinc-800/50 transition-colors">
                     <td className="px-6 py-4">
-                      <span className="font-mono text-purple-400 font-medium">{item.code}</span>
+                      <span className="font-mono text-red-400 font-medium">{item.code}</span>
                     </td>
                     <td className="px-6 py-4">
                       <div>

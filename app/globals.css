@@ -62,7 +62,7 @@
   }
 
   .btn-referral {
-    @apply px-8 py-4 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-600 
+    @apply px-8 py-4 bg-gradient-to-r from-red-500 via-orange-500 to-red-600 
            text-white rounded-full font-medium 
            transition-all duration-300 hover:shadow-2xl hover:scale-105 active:scale-95;
   }
@@ -80,17 +80,17 @@
   }
 
   .referral-gradient-bg {
-    @apply bg-gradient-to-br from-purple-100 via-pink-50 to-purple-50;
+    @apply bg-gradient-to-br from-red-100 via-orange-50 to-red-50;
   }
 
   .referral-card {
-    @apply bg-gradient-to-br from-purple-50 to-pink-50 
-           border-2 border-purple-200 rounded-2xl;
+    @apply bg-gradient-to-br from-red-50 to-orange-50 
+           border-2 border-red-200 rounded-2xl;
   }
 
   .referral-badge {
     @apply inline-flex items-center gap-2 px-4 py-2 
-           bg-gradient-to-r from-purple-500 to-pink-500 
+           bg-gradient-to-r from-red-500 to-orange-500 
            text-white text-sm font-medium rounded-full;
   }
 }

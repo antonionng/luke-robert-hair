@@ -17,19 +17,19 @@ export default function ReferralStats({ stats, recentRedemptions }: ReferralStat
       label: 'Total Referrals',
       value: stats.totalRedemptions,
       icon: Users,
-      color: 'from-purple-500 to-purple-600',
+      color: 'from-red-500 to-red-600',
     },
     {
       label: 'Completed Bookings',
       value: stats.completedBookings,
       icon: Check,
-      color: 'from-pink-500 to-pink-600',
+      color: 'from-orange-500 to-orange-600',
     },
     {
       label: 'Pending Bookings',
       value: stats.pendingBookings,
       icon: Clock,
-      color: 'from-purple-400 to-pink-400',
+      color: 'from-red-400 to-orange-400',
     },
     {
       label: 'Total Credits Earned',
@@ -53,23 +53,23 @@ export default function ReferralStats({ stats, recentRedemptions }: ReferralStat
 
       {/* Code & Uses */}
       <div className="referral-card p-6 text-center">
-        <p className="text-sm text-purple-700 font-semibold uppercase tracking-wide mb-2">
+        <p className="text-sm text-red-700 font-semibold uppercase tracking-wide mb-2">
           Your Code
         </p>
-        <p className="text-3xl font-bold text-purple-600 tracking-wider font-mono mb-4">
+        <p className="text-3xl font-bold text-red-600 tracking-wider font-mono mb-4">
           {stats.code}
         </p>
         <div className="flex items-center justify-center gap-2 text-graphite/70">
-          <span className="text-2xl font-bold text-purple-600">{stats.remainingUses}</span>
+          <span className="text-2xl font-bold text-red-600">{stats.remainingUses}</span>
           <span>/ {stats.maxUses} uses remaining</span>
         </div>
         {/* Progress Bar */}
-        <div className="mt-4 w-full bg-purple-100 rounded-full h-3 overflow-hidden">
+        <div className="mt-4 w-full bg-red-100 rounded-full h-3 overflow-hidden">
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${(stats.totalUses / stats.maxUses) * 100}%` }}
             transition={{ duration: 1, ease: 'easeOut' }}
-            className="h-full bg-gradient-to-r from-purple-500 to-pink-500"
+            className="h-full bg-gradient-to-r from-red-500 to-orange-500"
           />
         </div>
       </div>
@@ -82,7 +82,7 @@ export default function ReferralStats({ stats, recentRedemptions }: ReferralStat
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="bg-white rounded-xl shadow-lg p-6 border border-purple-100"
+            className="bg-white rounded-xl shadow-lg p-6 border border-red-100"
           >
             <div className="flex items-start justify-between mb-4">
               <div className={`p-3 rounded-lg bg-gradient-to-br ${stat.color}`}>
@@ -99,14 +99,14 @@ export default function ReferralStats({ stats, recentRedemptions }: ReferralStat
       <div className="referral-card p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-medium text-graphite">Conversion Rate</h3>
-          <span className="text-3xl font-bold text-purple-600">{stats.conversionRate}%</span>
+          <span className="text-3xl font-bold text-red-600">{stats.conversionRate}%</span>
         </div>
-        <div className="w-full bg-purple-100 rounded-full h-4 overflow-hidden">
+        <div className="w-full bg-red-100 rounded-full h-4 overflow-hidden">
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${stats.conversionRate}%` }}
             transition={{ duration: 1.5, ease: 'easeOut' }}
-            className="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-purple-600"
+            className="h-full bg-gradient-to-r from-red-500 via-orange-500 to-red-600"
           />
         </div>
         <p className="text-sm text-graphite/60 mt-2">
@@ -116,7 +116,7 @@ export default function ReferralStats({ stats, recentRedemptions }: ReferralStat
 
       {/* Recent Activity */}
       {recentRedemptions && recentRedemptions.length > 0 && (
-        <div className="bg-white rounded-xl shadow-lg p-6 border border-purple-100">
+        <div className="bg-white rounded-xl shadow-lg p-6 border border-red-100">
           <h3 className="text-xl font-medium text-graphite mb-4">Recent Referrals</h3>
           <div className="space-y-3">
             {recentRedemptions.map((redemption, index) => (
@@ -125,13 +125,13 @@ export default function ReferralStats({ stats, recentRedemptions }: ReferralStat
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="flex items-center justify-between p-4 bg-purple-50 rounded-lg"
+                className="flex items-center justify-between p-4 bg-red-50 rounded-lg"
               >
                 <div className="flex items-center gap-3">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                     redemption.bookingCompleted
                       ? 'bg-gradient-to-br from-green-500 to-emerald-600'
-                      : 'bg-gradient-to-br from-purple-400 to-pink-400'
+                      : 'bg-gradient-to-br from-red-400 to-orange-400'
                   }`}>
                     {redemption.bookingCompleted ? (
                       <Check size={20} className="text-white" />
@@ -153,7 +153,7 @@ export default function ReferralStats({ stats, recentRedemptions }: ReferralStat
                 <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                   redemption.bookingCompleted
                     ? 'bg-green-100 text-green-700'
-                    : 'bg-purple-100 text-purple-700'
+                    : 'bg-red-100 text-red-700'
                 }`}>
                   {redemption.bookingCompleted ? 'Completed' : 'Pending'}
                 </span>

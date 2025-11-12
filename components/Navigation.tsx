@@ -62,7 +62,7 @@ export default function Navigation() {
             ))}
             <Link href="/referrals" className="text-[13px] font-medium tracking-wide hover:text-sage transition-colors inline-flex items-center gap-1.5 whitespace-nowrap">
               Refer a Friend
-              <span className="inline-block px-2 py-0.5 bg-purple-500 text-white text-[10px] rounded-full">£10 Off</span>
+              <span className="inline-block px-2 py-0.5 bg-orange-500 text-white text-[10px] rounded-full">£10 Off</span>
             </Link>
             <Link href="/book" className="px-5 py-2 bg-sage text-white rounded-full text-[13px] font-medium hover:bg-sage-dark transition-all hover:scale-105 whitespace-nowrap ml-2">
               Book Now
@@ -110,7 +110,7 @@ export default function Navigation() {
               >
                 <span className="flex items-center gap-2">
                   Refer a Friend
-                  <span className="inline-block px-2 py-0.5 bg-purple-500 text-white text-xs rounded-full">£10 Off</span>
+                  <span className="inline-block px-2 py-0.5 bg-orange-500 text-white text-xs rounded-full">£10 Off</span>
                 </span>
               </Link>
               <Link

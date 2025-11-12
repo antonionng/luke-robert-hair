@@ -41,7 +41,7 @@ export default function Footer() {
               <li>
                 <Link href="/referrals" className="text-sage-light hover:text-white transition-colors inline-flex items-center gap-1">
                   Refer a Friend 
-                  <span className="inline-block px-2 py-0.5 bg-purple-500 text-white text-xs rounded-full">£10 Off</span>
+                  <span className="inline-block px-2 py-0.5 bg-orange-500 text-white text-xs rounded-full">£10 Off</span>
                 </Link>
               </li>
             </ul>
