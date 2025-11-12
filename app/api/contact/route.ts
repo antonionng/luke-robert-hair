@@ -52,30 +52,85 @@ export async function POST(request: NextRequest) {
       },
     };
 
-    console.log('💾 [CONTACT API] Creating lead in Supabase:', {
+    console.log('💾 [CONTACT API] Checking for existing lead in Supabase:', {
       email: leadData.email,
       source: leadData.source,
       leadType,
       type
     });
 
-    const { data: newLead, error: createError } = await supabase
+    // Check if lead already exists
+    const { data: existingLead } = await supabase
       .from('leads')
-      .insert([leadData])
-      .select()
+      .select('*')
+      .eq('email', leadData.email)
       .single();
 
-    if (createError) {
-      console.error('❌ [CONTACT API] Failed to create lead:', createError);
-      throw createError;
-    }
+    let newLead;
 
-    console.log('✅ [CONTACT API] Lead created successfully:', {
-      leadId: newLead.id,
-      email: newLead.email,
-      source: newLead.source,
-      leadType
-    });
+    if (existingLead) {
+      // Update existing lead with new information
+      console.log('📝 [CONTACT API] Updating existing lead:', existingLead.id);
+      
+      const { data: updatedLead, error: updateError } = await supabase
+        .from('leads')
+        .update({
+          first_name: firstName,
+          last_name: lastName,
+          phone: phone || existingLead.phone, // Keep existing phone if none provided
+          source, // Update source to latest
+          course_interest: courseInterest,
+          notes: message ? (existingLead.notes ? `${existingLead.notes}\n\n---\n${new Date().toISOString()}\n${message}` : message) : existingLead.notes, // Append new message to existing notes
+          custom_fields: {
+            ...((existingLead.custom_fields as any) || {}),
+            leadType,
+            enquiryType: type,
+            lastMessage: message,
+            lastContactDate: new Date().toISOString(),
+            submittedVia: 'contact_form',
+          },
+          updated_at: new Date().toISOString(),
+          last_activity_date: new Date().toISOString(),
+        })
+        .eq('id', existingLead.id)
+        .select()
+        .single();
+
+      if (updateError) {
+        console.error('❌ [CONTACT API] Failed to update lead:', updateError);
+        throw updateError;
+      }
+
+      newLead = updatedLead;
+      console.log('✅ [CONTACT API] Lead updated successfully:', {
+        leadId: newLead.id,
+        email: newLead.email,
+        source: newLead.source,
+        leadType
+      });
+    } else {
+      // Create new lead
+      console.log('➕ [CONTACT API] Creating new lead');
+      
+      const { data: createdLead, error: createError } = await supabase
+        .from('leads')
+        .insert([leadData])
+        .select()
+        .single();
+
+      if (createError) {
+        console.error('❌ [CONTACT API] Failed to create lead:', createError);
+        throw createError;
+      }
+
+      newLead = createdLead;
+      console.log('✅ [CONTACT API] Lead created successfully:', {
+        leadId: newLead.id,
+        email: newLead.email,
+        source: newLead.source,
+        leadType
+      });
+    }
 
     // Log activity
     await supabase.from('lead_activities').insert({
