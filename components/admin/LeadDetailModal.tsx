@@ -94,10 +94,10 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
   const isContact = displayLead?.leadType === 'contact' || displayLead?.source === 'contact_form_general';
   const scoreColor = displayLead?.score >= 70 ? 'text-green-600' : displayLead?.score >= 40 ? 'text-yellow-600' : 'text-red-600';
   
-  // Extract user message from activities or custom fields
+  // Extract user message from activities or custom fields (NOT from notes)
   const userMessage = activities.find(a => a.activity_type === 'form_submitted')?.activity_data?.message ||
                       (displayLead?.custom_fields as any)?.message ||
-                      displayLead?.notes?.split('\n\n---\n')[0]; // Get first message if multiple
+                      (displayLead?.custom_fields as any)?.lastMessage;
 
   // Don't render if no lead to display and modal is closed
   if (!displayLead && !isOpen) return null;
@@ -184,10 +184,10 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
                 {isContact && userMessage && (
                   <div className="mb-6 bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-blue-200 rounded-xl p-6 shadow-sm">
                     <div className="flex items-start gap-3 mb-3">
-                      <div className="p-2 bg-blue-500 rounded-lg">
+                      <div className="p-2 bg-blue-500 rounded-lg flex-shrink-0">
                         <MessageSquare size={20} className="text-white" />
                       </div>
-                      <div>
+                      <div className="flex-1">
                         <h3 className="text-lg font-semibold text-graphite">User Message</h3>
                         <p className="text-sm text-graphite/60">Submitted on {new Date(displayLead.enquiryDate || displayLead.createdAt).toLocaleDateString('en-GB', { 
                           weekday: 'long', 
@@ -199,8 +199,8 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
                         })}</p>
                       </div>
                     </div>
-                    <div className="bg-white rounded-lg p-4 border border-blue-100">
-                      <p className="text-graphite whitespace-pre-wrap leading-relaxed">{userMessage}</p>
+                    <div className="bg-white rounded-lg p-4 border border-blue-100 max-h-[300px] overflow-y-auto">
+                      <p className="text-graphite whitespace-pre-wrap leading-relaxed text-[15px]">{userMessage}</p>
                     </div>
                   </div>
                 )}
@@ -420,8 +420,8 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
                                       })}
                                     </p>
                                     {hasMessage && (
-                                      <div className="mt-2 p-2 bg-white rounded border border-blue-100">
-                                        <p className="text-sm text-graphite whitespace-pre-wrap">{activity.activity_data.message}</p>
+                                      <div className="mt-2 p-3 bg-white rounded-lg border border-blue-100 max-h-[200px] overflow-y-auto">
+                                        <p className="text-sm text-graphite whitespace-pre-wrap leading-relaxed">{activity.activity_data.message}</p>
                                       </div>
                                     )}
                                   </div>

@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       lead_score: 50, // Default score for contact form submissions
       lifecycle_stage: 'new',
       course_interest: courseInterest,
-      notes: message || null,
+      notes: null, // Notes are for admin only, not user messages
       custom_fields: {
         leadType,
         enquiryType: type,
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
           phone: phone || existingLead.phone, // Keep existing phone if none provided
           source, // Update source to latest
           course_interest: courseInterest,
-          notes: message ? (existingLead.notes ? `${existingLead.notes}\n\n---\n${new Date().toISOString()}\n${message}` : message) : existingLead.notes, // Append new message to existing notes
+          // Do NOT put user message in notes - notes are for admin only
           custom_fields: {
             ...((existingLead.custom_fields as any) || {}),
             leadType,
