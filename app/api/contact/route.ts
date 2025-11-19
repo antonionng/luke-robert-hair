@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     const lastName = nameParts.slice(1).join(' ') || firstName;
 
     // Determine lead type and source based on enquiry type
-    let leadType = 'education'; // default
+    let leadType = 'contact'; // default for general enquiries
     let source = 'contact_form_general';
     let courseInterest = 'General Enquiry';
 
@@ -31,6 +31,10 @@ export async function POST(request: NextRequest) {
       leadType = 'salon_referral';
       source = 'contact_form_salon';
       courseInterest = 'Salon Booking Enquiry';
+    } else if (type === 'general') {
+      leadType = 'contact';
+      source = 'contact_form_general';
+      courseInterest = 'General Contact Enquiry';
     }
 
     // Create lead in Supabase

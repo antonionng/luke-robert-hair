@@ -164,11 +164,25 @@ export default function AdminDashboard() {
             return isSalon;
           });
           
+          const contactEnquiries = leadsData.filter((l: any) => {
+            const isContact = (
+              l.leadType === 'contact' || 
+              l.source === 'contact_form_general'
+            );
+            if (isContact) {
+              console.log('💬 [ADMIN] Contact Enquiry detected:', {
+                email: l.email,
+                leadType: l.leadType,
+                source: l.source
+              });
+            }
+            return isContact;
+          });
+          
           const educationLeads = leadsData.filter((l: any) => {
             const isEducation = (
               l.leadType === 'education' || 
-              (l.source === 'contact_form_education') ||
-              (!l.leadType && !l.institution && !l.referralSalon && l.source !== 'external_booking_intent')
+              (l.source === 'contact_form_education')
             );
             if (isEducation) {
               console.log('🎓 [ADMIN] Education Lead detected:', {
@@ -195,13 +209,15 @@ export default function AdminDashboard() {
           
           console.log('📊 [ADMIN] Categorization Complete:', {
             total: leadsData.length,
+            contactEnquiries: contactEnquiries.length,
             salonReferrals: salonReferrals.length,
             educationLeads: educationLeads.length,
             cpdLeads: cpdLeads.length,
-            uncategorized: leadsData.length - (salonReferrals.length + educationLeads.length + cpdLeads.length)
+            uncategorized: leadsData.length - (contactEnquiries.length + salonReferrals.length + educationLeads.length + cpdLeads.length)
           });
           
-          setLeads(educationLeads);
+          // Combine contact enquiries and education leads for the "leads" tab
+          setLeads([...contactEnquiries, ...educationLeads]);
           setCpdPartnerships(cpdLeads);
           
           // Update stats with CPD count and salon referrals
