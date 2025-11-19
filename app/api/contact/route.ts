@@ -136,14 +136,15 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Log activity
+    // Log activity with full message for display in timeline
     await supabase.from('lead_activities').insert({
       lead_id: newLead.id,
       activity_type: 'form_submitted',
       activity_data: {
         form_type: 'contact_form',
         enquiry_type: type,
-        message: message?.substring(0, 100),
+        message: message || null, // Store full message for timeline display
+        submitted_at: new Date().toISOString(),
       },
       automated: false,
     });

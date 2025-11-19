@@ -91,7 +91,13 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
   };
 
   const isCPD = displayLead?.leadType === 'cpd' || displayLead?.institution;
+  const isContact = displayLead?.leadType === 'contact' || displayLead?.source === 'contact_form_general';
   const scoreColor = displayLead?.score >= 70 ? 'text-green-600' : displayLead?.score >= 40 ? 'text-yellow-600' : 'text-red-600';
+  
+  // Extract user message from activities or custom fields
+  const userMessage = activities.find(a => a.activity_type === 'form_submitted')?.activity_data?.message ||
+                      (displayLead?.custom_fields as any)?.message ||
+                      displayLead?.notes?.split('\n\n---\n')[0]; // Get first message if multiple
 
   // Don't render if no lead to display and modal is closed
   if (!displayLead && !isOpen) return null;
@@ -174,6 +180,31 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
 
               {/* Content */}
               <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                {/* User Message Section - Prominent display for contact enquiries */}
+                {isContact && userMessage && (
+                  <div className="mb-6 bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-blue-200 rounded-xl p-6 shadow-sm">
+                    <div className="flex items-start gap-3 mb-3">
+                      <div className="p-2 bg-blue-500 rounded-lg">
+                        <MessageSquare size={20} className="text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-graphite">User Message</h3>
+                        <p className="text-sm text-graphite/60">Submitted on {new Date(displayLead.enquiryDate || displayLead.createdAt).toLocaleDateString('en-GB', { 
+                          weekday: 'long', 
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}</p>
+                      </div>
+                    </div>
+                    <div className="bg-white rounded-lg p-4 border border-blue-100">
+                      <p className="text-graphite whitespace-pre-wrap leading-relaxed">{userMessage}</p>
+                    </div>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   {/* Left Column - Main Info */}
                   <div className="lg:col-span-2 space-y-6">
@@ -318,10 +349,13 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
                       </div>
                     </div>
 
-                    {/* Notes */}
+                    {/* Admin Notes */}
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <label className="text-sm text-graphite/70 font-medium">Notes</label>
+                        <div>
+                          <label className="text-sm text-graphite font-semibold">Admin Notes (Internal)</label>
+                          <p className="text-xs text-graphite/60 mt-0.5">Private notes for your reference only</p>
+                        </div>
                         {notesChanged && (
                           <button
                             onClick={handleSaveNotes}
@@ -348,8 +382,8 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
                           setNotes(e.target.value);
                           setNotesChanged(true);
                         }}
-                        placeholder="Add notes about this lead..."
-                        className="w-full px-4 py-3 border border-mist rounded-xl focus:outline-none focus:ring-2 focus:ring-sage/20 min-h-[100px] bg-white"
+                        placeholder="Add your private notes about this lead... (Not visible to the client)"
+                        className="w-full px-4 py-3 border border-mist rounded-xl focus:outline-none focus:ring-2 focus:ring-sage/20 min-h-[120px] bg-white text-graphite"
                       />
                     </div>
 
@@ -365,19 +399,36 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
                         <div className="text-center py-4 text-graphite/50">No activities yet</div>
                       ) : (
                         <div className="space-y-3">
-                          {activities.slice(0, 5).map((activity) => (
-                            <div key={activity.id} className="flex items-start gap-3 p-3 bg-sage/5 rounded-lg">
-                              <MessageSquare size={16} className="text-sage mt-0.5" />
-                              <div className="flex-1">
-                                <p className="text-sm text-graphite font-medium">
-                                  {activity.activity_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                                </p>
-                                <p className="text-xs text-graphite/60 mt-0.5">
-                                  {new Date(activity.created_at).toLocaleString('en-GB')}
-                                </p>
+                          {activities.slice(0, 5).map((activity) => {
+                            const hasMessage = activity.activity_data?.message;
+                            return (
+                              <div key={activity.id} className={`p-3 rounded-lg ${hasMessage ? 'bg-blue-50 border border-blue-200' : 'bg-sage/5'}`}>
+                                <div className="flex items-start gap-3">
+                                  <MessageSquare size={16} className={hasMessage ? "text-blue-600 mt-0.5" : "text-sage mt-0.5"} />
+                                  <div className="flex-1">
+                                    <p className="text-sm text-graphite font-medium">
+                                      {activity.activity_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                    </p>
+                                    <p className="text-xs text-graphite/60 mt-0.5">
+                                      {new Date(activity.created_at).toLocaleString('en-GB', {
+                                        weekday: 'short',
+                                        year: 'numeric',
+                                        month: 'short',
+                                        day: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                      })}
+                                    </p>
+                                    {hasMessage && (
+                                      <div className="mt-2 p-2 bg-white rounded border border-blue-100">
+                                        <p className="text-sm text-graphite whitespace-pre-wrap">{activity.activity_data.message}</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
                               </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       )}
                     </div>

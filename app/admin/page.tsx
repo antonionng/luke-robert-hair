@@ -51,7 +51,7 @@ export default function AdminDashboard() {
       setIsAuthenticated(true);
     }
   }, []);
-  const [activeTab, setActiveTab] = useState<'overview' | 'bookings' | 'leads' | 'cpd' | 'chat' | 'services' | 'content' | 'referrals'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'bookings' | 'contacts' | 'leads' | 'cpd' | 'chat' | 'services' | 'content' | 'referrals'>('overview');
   const [searchTerm, setSearchTerm] = useState('');
   const [bookingView, setBookingView] = useState<'table' | 'calendar'>('table');
   
@@ -85,6 +85,7 @@ export default function AdminDashboard() {
   });
   
   const [bookings, setBookings] = useState<BookingType[]>([]);
+  const [contactEnquiries, setContactEnquiries] = useState<any[]>([]);
   const [leads, setLeads] = useState<any[]>([]);
   const [cpdPartnerships, setCpdPartnerships] = useState<any[]>([]);
   const [upcomingBookings, setUpcomingBookings] = useState<any[]>([]);
@@ -216,15 +217,18 @@ export default function AdminDashboard() {
             uncategorized: leadsData.length - (contactEnquiries.length + salonReferrals.length + educationLeads.length + cpdLeads.length)
           });
           
-          // Combine contact enquiries and education leads for the "leads" tab
-          setLeads([...contactEnquiries, ...educationLeads]);
+          // Set contact enquiries and education leads separately
+          setContactEnquiries(contactEnquiries);
+          setLeads(educationLeads);
           setCpdPartnerships(cpdLeads);
           
-          // Update stats with CPD count and salon referrals
+          // Update stats with CPD count, contact enquiries, and salon referrals
           setStats(prev => ({
             ...prev,
             cpdPartnerships: cpdLeads.length,
-            pendingBookings: prev.pendingBookings + salonReferrals.length // Include referrals in pending
+            pendingBookings: prev.pendingBookings + salonReferrals.length, // Include referrals in pending
+            activeLeads: educationLeads.length,
+            totalContacts: prev.totalContacts + contactEnquiries.length
           }));
           
           // Store salon referrals with bookings
@@ -610,6 +614,7 @@ export default function AdminDashboard() {
         stats={{
           activeLeads: leads.length,
           pendingBookings: stats.pendingBookings,
+          contactEnquiries: contactEnquiries.length,
           cpdPartnerships: cpdPartnerships.length,
           chatSessions: stats.chatSessions,
         }}
@@ -629,6 +634,7 @@ export default function AdminDashboard() {
                 <h1 className="text-4xl font-semibold text-white mb-2">
                   {activeTab === 'overview' && 'Dashboard Overview'}
                   {activeTab === 'bookings' && 'Salon Bookings'}
+                  {activeTab === 'contacts' && 'Contact Enquiries'}
                   {activeTab === 'leads' && 'Stylist Training'}
                   {activeTab === 'cpd' && 'College Partnerships'}
                   {activeTab === 'chat' && 'Chat Sessions'}
@@ -639,6 +645,7 @@ export default function AdminDashboard() {
                 <p className="text-lg text-zinc-400">
                   {activeTab === 'overview' && 'Monitor your business performance'}
                   {activeTab === 'bookings' && 'Hair styling appointments and services'}
+                  {activeTab === 'contacts' && 'General contact form submissions and enquiries'}
                   {activeTab === 'leads' && 'Professional education for stylists and salons'}
                   {activeTab === 'cpd' && 'Educational programs for colleges and institutions'}
                   {activeTab === 'chat' && 'AI chat interactions'}
@@ -648,13 +655,13 @@ export default function AdminDashboard() {
                 </p>
               </div>
               <div className="flex items-center gap-3">
-                {(activeTab === 'leads' || activeTab === 'cpd') && (
+                {(activeTab === 'contacts' || activeTab === 'leads' || activeTab === 'cpd') && (
                   <button 
                     onClick={() => setIsCreateLeadModalOpen(true)}
                     className="admin-btn-primary flex items-center gap-2"
                   >
                     <Plus size={18} />
-                    Add Lead
+                    {activeTab === 'contacts' ? 'Add Contact' : 'Add Lead'}
                   </button>
                 )}
                 {activeTab === 'bookings' && (
@@ -892,6 +899,32 @@ export default function AdminDashboard() {
                     }}
                   />
                 )}
+              </motion.div>
+            )}
+
+            {activeTab === 'contacts' && (
+              <motion.div
+                key="contacts"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="mb-6 relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={20} />
+                  <input
+                    type="text"
+                    placeholder="Search contact enquiries..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="admin-input w-full pl-12 pr-4 py-3"
+                  />
+                </div>
+                <LeadsTable 
+                  leads={contactEnquiries} 
+                  searchTerm={searchTerm}
+                  onViewLead={handleViewLead}
+                />
               </motion.div>
             )}
 

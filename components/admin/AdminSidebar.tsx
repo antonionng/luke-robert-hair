@@ -15,6 +15,7 @@ interface AdminSidebarProps {
   stats?: {
     activeLeads: number;
     pendingBookings: number;
+    contactEnquiries: number;
     cpdPartnerships: number;
     chatSessions: number;
   };
@@ -26,9 +27,10 @@ export default function AdminSidebar({ activeTab, onTabChange, onLogout, stats }
   const navItems = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard, count: null },
     { id: 'bookings', label: 'Salon Bookings', icon: Calendar, count: stats?.pendingBookings },
+    { id: 'contacts', label: 'Contact Enquiries', icon: MessageSquare, count: stats?.contactEnquiries },
     { id: 'leads', label: 'Stylist Training', icon: GraduationCap, count: stats?.activeLeads },
     { id: 'cpd', label: 'College Partnerships', icon: Building2, count: stats?.cpdPartnerships },
-    { id: 'chat', label: 'Chat Sessions', icon: MessageSquare, count: stats?.chatSessions },
+    { id: 'chat', label: 'Chat Sessions', icon: Users, count: stats?.chatSessions },
     { id: 'referrals', label: 'Referrals', icon: Gift, count: null },
     { id: 'content', label: 'Content Engine', icon: Sparkles, count: null },
     { id: 'services', label: 'Services', icon: Settings, count: null },
