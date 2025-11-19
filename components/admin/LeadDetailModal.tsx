@@ -34,6 +34,9 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
   const [notes, setNotes] = useState(lead?.notes || '');
   const [isSavingNotes, setIsSavingNotes] = useState(false);
   const [notesChanged, setNotesChanged] = useState(false);
+  // State for expanding/collapsing messages
+  const [expandedTopMessage, setExpandedTopMessage] = useState(false);
+  const [expandedActivityIds, setExpandedActivityIds] = useState<Set<string>>(new Set());
 
   const fetchActivities = async (leadId: string) => {
     setIsLoadingActivities(true);
@@ -217,8 +220,22 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
                         </p>
                       </div>
                     </div>
-                    <div className="bg-white rounded-lg p-4 border border-blue-100 max-h-[300px] overflow-y-auto">
-                      <p className="text-graphite whitespace-pre-wrap leading-relaxed text-[15px]">{userMessage}</p>
+                    <div className="bg-white rounded-lg p-4 border border-blue-100 relative">
+                      <p className={`text-graphite whitespace-pre-wrap leading-relaxed text-[15px] ${!expandedTopMessage && userMessage.length > 200 ? 'line-clamp-3' : ''}`}>
+                        {userMessage}
+                      </p>
+                      {userMessage.length > 200 && (
+                        <button
+                          onClick={() => setExpandedTopMessage(!expandedTopMessage)}
+                          className="mt-2 text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                        >
+                          {expandedTopMessage ? (
+                            <>See less</>
+                          ) : (
+                            <>See more</>
+                          )}
+                        </button>
+                      )}
                     </div>
                     {messageCount > 1 && (
                       <div className="mt-3 pt-3 border-t border-blue-200">
@@ -434,6 +451,10 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
                           {[...activities].reverse().map((activity, index) => {
                             const hasMessage = activity.activity_data?.message;
                             const isLatest = index === 0;
+                            const isExpanded = expandedActivityIds.has(activity.id);
+                            const messageText = activity.activity_data?.message || '';
+                            const shouldShowToggle = messageText.length > 200;
+                            
                             return (
                               <div key={activity.id} className={`p-3 rounded-lg ${hasMessage ? 'bg-blue-50 border-2 border-blue-200' : 'bg-sage/5 border border-sage/20'}`}>
                                 <div className="flex items-start gap-3">
@@ -460,8 +481,26 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
                                       })}
                                     </p>
                                     {hasMessage && (
-                                      <div className="mt-2 p-3 bg-white rounded-lg border border-blue-100 max-h-[200px] overflow-y-auto shadow-sm">
-                                        <p className="text-sm text-graphite whitespace-pre-wrap leading-relaxed">{activity.activity_data.message}</p>
+                                      <div className="mt-2 p-3 bg-white rounded-lg border border-blue-100 shadow-sm">
+                                        <p className={`text-sm text-graphite whitespace-pre-wrap leading-relaxed ${!isExpanded && shouldShowToggle ? 'line-clamp-3' : ''}`}>
+                                          {messageText}
+                                        </p>
+                                        {shouldShowToggle && (
+                                          <button
+                                            onClick={() => {
+                                              const newSet = new Set(expandedActivityIds);
+                                              if (isExpanded) {
+                                                newSet.delete(activity.id);
+                                              } else {
+                                                newSet.add(activity.id);
+                                              }
+                                              setExpandedActivityIds(newSet);
+                                            }}
+                                            className="mt-2 text-sm font-medium text-blue-600 hover:text-blue-700"
+                                          >
+                                            {isExpanded ? 'See less' : 'See more'}
+                                          </button>
+                                        )}
                                       </div>
                                     )}
                                   </div>
