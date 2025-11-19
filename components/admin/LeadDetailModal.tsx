@@ -94,10 +94,16 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
   const isContact = displayLead?.leadType === 'contact' || displayLead?.source === 'contact_form_general';
   const scoreColor = displayLead?.score >= 70 ? 'text-green-600' : displayLead?.score >= 40 ? 'text-yellow-600' : 'text-red-600';
   
-  // Extract user message from activities or custom fields (NOT from notes)
-  const userMessage = activities.find(a => a.activity_type === 'form_submitted')?.activity_data?.message ||
+  // Extract MOST RECENT user message from activities (NOT from notes)
+  // Activities are ordered oldest to newest, so we reverse to get the latest first
+  const formSubmissions = activities.filter(a => a.activity_type === 'form_submitted' && a.activity_data?.message);
+  const latestMessage = formSubmissions[formSubmissions.length - 1]?.activity_data?.message;
+  const userMessage = latestMessage ||
                       (displayLead?.custom_fields as any)?.message ||
                       (displayLead?.custom_fields as any)?.lastMessage;
+  
+  // Count of messages for display
+  const messageCount = formSubmissions.length;
 
   // Don't render if no lead to display and modal is closed
   if (!displayLead && !isOpen) return null;
@@ -188,20 +194,40 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
                         <MessageSquare size={20} className="text-white" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-graphite">User Message</h3>
-                        <p className="text-sm text-graphite/60">Submitted on {new Date(displayLead.enquiryDate || displayLead.createdAt).toLocaleDateString('en-GB', { 
-                          weekday: 'long', 
-                          year: 'numeric', 
-                          month: 'long', 
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}</p>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-lg font-semibold text-graphite">
+                            {messageCount > 1 ? 'Latest Message' : 'User Message'}
+                          </h3>
+                          {messageCount > 1 && (
+                            <span className="px-2.5 py-0.5 bg-blue-500 text-white text-xs font-semibold rounded-full">
+                              {messageCount} messages
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-graphite/60">
+                          {messageCount > 1 ? 'Most recent: ' : 'Submitted on '}
+                          {formSubmissions[formSubmissions.length - 1] && new Date(formSubmissions[formSubmissions.length - 1].created_at).toLocaleDateString('en-GB', { 
+                            weekday: 'long', 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </p>
                       </div>
                     </div>
                     <div className="bg-white rounded-lg p-4 border border-blue-100 max-h-[300px] overflow-y-auto">
                       <p className="text-graphite whitespace-pre-wrap leading-relaxed text-[15px]">{userMessage}</p>
                     </div>
+                    {messageCount > 1 && (
+                      <div className="mt-3 pt-3 border-t border-blue-200">
+                        <p className="text-xs text-graphite/60 flex items-center gap-1">
+                          <Clock size={12} />
+                          View all {messageCount} messages in Activity Timeline below
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -392,6 +418,11 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
                       <h3 className="font-semibold text-graphite mb-3 flex items-center gap-2">
                         <Clock size={18} className="text-sage" />
                         Activity Timeline
+                        {activities.length > 0 && (
+                          <span className="text-xs text-graphite/50 font-normal">
+                            ({activities.length} {activities.length === 1 ? 'activity' : 'activities'})
+                          </span>
+                        )}
                       </h3>
                       {isLoadingActivities ? (
                         <div className="text-center py-4 text-graphite/50">Loading activities...</div>
@@ -399,16 +430,25 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
                         <div className="text-center py-4 text-graphite/50">No activities yet</div>
                       ) : (
                         <div className="space-y-3">
-                          {activities.slice(0, 5).map((activity) => {
+                          {/* Show all activities in reverse order (newest first) */}
+                          {[...activities].reverse().map((activity, index) => {
                             const hasMessage = activity.activity_data?.message;
+                            const isLatest = index === 0;
                             return (
-                              <div key={activity.id} className={`p-3 rounded-lg ${hasMessage ? 'bg-blue-50 border border-blue-200' : 'bg-sage/5'}`}>
+                              <div key={activity.id} className={`p-3 rounded-lg ${hasMessage ? 'bg-blue-50 border-2 border-blue-200' : 'bg-sage/5 border border-sage/20'}`}>
                                 <div className="flex items-start gap-3">
-                                  <MessageSquare size={16} className={hasMessage ? "text-blue-600 mt-0.5" : "text-sage mt-0.5"} />
-                                  <div className="flex-1">
-                                    <p className="text-sm text-graphite font-medium">
-                                      {activity.activity_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                                    </p>
+                                  <MessageSquare size={16} className={hasMessage ? "text-blue-600 mt-0.5 flex-shrink-0" : "text-sage mt-0.5 flex-shrink-0"} />
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <p className="text-sm text-graphite font-medium">
+                                        {activity.activity_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                      </p>
+                                      {isLatest && hasMessage && (
+                                        <span className="px-2 py-0.5 bg-blue-500 text-white text-xs font-semibold rounded">
+                                          Latest
+                                        </span>
+                                      )}
+                                    </div>
                                     <p className="text-xs text-graphite/60 mt-0.5">
                                       {new Date(activity.created_at).toLocaleString('en-GB', {
                                         weekday: 'short',
@@ -420,7 +460,7 @@ export default function LeadDetailModal({ lead, isOpen, onClose, onUpdate }: Lea
                                       })}
                                     </p>
                                     {hasMessage && (
-                                      <div className="mt-2 p-3 bg-white rounded-lg border border-blue-100 max-h-[200px] overflow-y-auto">
+                                      <div className="mt-2 p-3 bg-white rounded-lg border border-blue-100 max-h-[200px] overflow-y-auto shadow-sm">
                                         <p className="text-sm text-graphite whitespace-pre-wrap leading-relaxed">{activity.activity_data.message}</p>
                                       </div>
                                     )}
